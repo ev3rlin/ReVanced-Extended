@@ -1,6 +1,6 @@
 {
-  "version": "v8.30.54 (patches dev.5)",
-  "versionCode": 4,
-  "zipUrl": "https://github.com/ev3rlin/ReVanced-Extended/releases/download/4/youtube-music-revanced-extended-magisk-v8.30.54-arm-v7a.zip",
+  "version": "v8.30.54 (patches dev.6)",
+  "versionCode": 5,
+  "zipUrl": "https://github.com/ev3rlin/ReVanced-Extended/releases/download/5/youtube-music-revanced-extended-magisk-v8.30.54-arm-v7a.zip",
   "changelog": "https://raw.githubusercontent.com/ev3rlin/ReVanced-Extended/update/build.md"
 }
