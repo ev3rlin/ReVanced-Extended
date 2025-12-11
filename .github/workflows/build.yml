@@ -35,6 +35,23 @@ jobs:
             fi
           fi
 
+      - name: Make release name
+        id: rel_name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TODAY=$(date +'%Y-%m-%d')
+  
+          # считаем сколько релизов с такой датой уже есть
+          COUNT=$(gh release list --limit 100 \
+            | grep "$TODAY" \
+            | wc -l)
+  
+            INDEX=$((COUNT + 1))
+  
+            NAME="ReVanced Extended ${TODAY} (v${INDEX})"
+            echo "NAME=$NAME" >> $GITHUB_OUTPUT
+
       - name: Get next version code
         id: next_ver_code
         env:
@@ -66,13 +83,15 @@ jobs:
           body: ${{ steps.get_output.outputs.BUILD_LOG }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./build/*
-          release_name: ReVanced
+          release_name: ${{ steps.rel_name.outputs.NAME }}
           tag: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
           file_glob: true
           overwrite: true
+          prerelease: ${{ github.ref_name == 'dev' }}
 
       - name: Update changelog and Magisk update json
         id: update_config
+        if: github.ref_name == 'main'
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
