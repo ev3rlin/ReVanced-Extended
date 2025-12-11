@@ -91,6 +91,7 @@ jobs:
 
       - name: Update changelog and Magisk update json
         id: update_config
+        if: github.ref_name == 'main'
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
