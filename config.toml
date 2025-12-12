@@ -7,9 +7,9 @@ cli-source = "inotia00/revanced-cli"
 
 patches-version = "dev"
 
-rv-brand = "ReVanced Extended"
+rv-brand = "anddea-RVX"
 
-[YouTube-Revanced-Extended]
+[YouTube-RVX]
 app-name = "YouTube"
 build-mode = "both"
 version = "20.21.37"
@@ -20,7 +20,7 @@ excluded-patches = "'Custom header for YouTube'"
 included-patches = "'Visual preferences icons for YouTube' 'Return YouTube Username'"
 patcher-args = "-e 'Custom branding' -OcustomName='YouTube RVX' -OcustomIcon='Vanced Black' -e 'Theme' -OlightThemeBackgroundColor=#FFF9F9F9"
 
-[YouTube-Music-Revanced-Extended]
+[YouTube-Music-RVX]
 app-name = "YouTube Music"
 build-mode = "both"
 arch = "both"
