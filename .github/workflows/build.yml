@@ -48,17 +48,6 @@ jobs:
             if [ "$UPDATE_CFG" ]; then
               echo "$UPDATE_CFG" > config.json
             fi
-
-            # Commit updates to same branch if changes are present
-            git add config.toml
-            if git diff --cached --quiet; then
-              echo "No config changes to commit."
-            else
-              git config user.name "github-actions[bot]"
-              git config user.email "github-actions[bot]@users.noreply.github.com"
-              git commit -m "Auto-update config.toml [CI]"
-              git push origin HEAD:$GITHUB_REF_NAME
-            fi
           fi
 
       - name: Make release name
@@ -93,6 +82,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
           NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+
+      - name: Commit config after successful build
+        if: ${{ inputs.from_ci }}
+        run: |
+          git add config.toml
+          if git diff --cached --quiet; then
+            echo "No config changes to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Auto-update config.toml [CI]"
+            git push origin HEAD:$GITHUB_REF_NAME
+          fi
 
       - name: Get output
         id: get_output
