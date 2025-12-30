@@ -102,12 +102,13 @@ get_rv_prebuilts() {
 		fi
 		if [ "$tag" = "Patches" ]; then
 			# Initial changelog structure
-			# if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
-			if [ $grab_cl = true ]; then
-				local changelog_body=$(jq -r '.body // empty' <<<"$resp")
-    			echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
-			fi
+			# Enhanced changelog structure with body extraction
+			# if [ $grab_cl = true ]; then
+			# 	local changelog_body=$(jq -r '.body // empty' <<<"$resp")
+    		# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
+			# fi
 
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				if ! (

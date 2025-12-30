@@ -165,18 +165,29 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+# Initial changelog logic
+log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
+
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
 	log "\nSkipped:"
-
-	# Initial skipped logic
-	# log "$SKIPPED"
-
-	# Convert "Patches: owner/repo-version.rvp" to "Patches: owner/repo-version.rvp ([Changelog](...))""
-	SKIPPED_LINK=$(echo "$SKIPPED" | sed 's/Patches: \([^/]*\)\/\([^-]*\)-\([^ ]*\)\.rvp/Patches: \1\/\2-\3.rvp ([Changelog](https:\/\/github.com\/\1\/\2\/releases\/tag\/\3))/')
-	log "$SKIPPED_LINK"
-else
-	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
+	log "$SKIPPED"
 fi
+
+# New skipped changelog logic with links
+
+# SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
+# if [ -n "$SKIPPED" ]; then
+# 	log "\nSkipped:"
+
+# 	# Initial skipped logic
+# 	# log "$SKIPPED"
+
+# 	# Convert "Patches: owner/repo-version.rvp" to "Patches: owner/repo-version.rvp ([Changelog](...))""
+# 	SKIPPED_LINK=$(echo "$SKIPPED" | sed 's/Patches: \([^/]*\)\/\([^-]*\)-\([^ ]*\)\.rvp/Patches: \1\/\2-\3.rvp ([Changelog](https:\/\/github.com\/\1\/\2\/releases\/tag\/\3))/')
+# 	log "$SKIPPED_LINK"
+# else
+# 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
+# fi
 
 pr "Done"
