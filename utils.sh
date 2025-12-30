@@ -101,6 +101,9 @@ get_rv_prebuilts() {
 			tag_name=v${tag_name%.*}
 		fi
 		if [ "$tag" = "Patches" ]; then
+			# Initial changelog structure
+			# if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+
 			if [ $grab_cl = true ]; then
 				local changelog_body=$(jq -r '.body // empty' <<<"$resp")
     			echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
