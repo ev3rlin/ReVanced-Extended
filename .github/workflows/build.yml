@@ -57,7 +57,7 @@ jobs:
         run: |
           TODAY=$(date +'%Y-%m-%d')
 
-          # считаем сколько релизов с такой датой уже есть
+          # count how many releases with this date already exist
           COUNT=$(gh release list --limit 100 \
             | grep "$TODAY" \
             | wc -l)
