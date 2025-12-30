@@ -135,6 +135,53 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+get_latest_app_version() {
+    local src=$1 app=$2
+    local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
+    curl -s "https://raw.githubusercontent.com/${src}/dev/${ver_file}" 2>/dev/null \
+        | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -1
+}
+
+auto_update_app_versions() {
+    local config_file=${1:-config.toml}
+    local patches_src=${2:-$DEF_PATCHES_SRC}
+    local updated=false
+
+    pr "Checking for app version updates from ${patches_src}..." >&2
+
+    # YouTube
+    local yt_latest=$(get_latest_app_version "$patches_src" "youtube")
+    if [ -n "$yt_latest" ]; then
+        local yt_current=$(toml_get "$(toml_get_table YouTube-RVX)" version 2>/dev/null || echo "")
+        if [ -n "$yt_current" ] && [ "$yt_current" != "$yt_latest" ]; then
+            pr "  YouTube: $yt_current → $yt_latest" >&2
+            if [ "$OS" = "Linux" ] || [ "$OS" = "GNU/Linux" ]; then
+                sed -i "/\[YouTube-RVX\]/,/^$/{s/version = .*/version = \"$yt_latest\"/}" "$config_file"
+            else
+                sed -i '' "/\[YouTube-RVX\]/,/^$/{s/version = .*/version = \"$yt_latest\"/}" "$config_file"
+            fi
+            updated=true
+        fi
+    fi
+
+    # YouTube Music
+    local music_latest=$(get_latest_app_version "$patches_src" "music")
+    if [ -n "$music_latest" ]; then
+        local music_current=$(toml_get "$(toml_get_table YouTube-Music-RVX)" version 2>/dev/null || echo "")
+        if [ -n "$music_current" ] && [ "$music_current" != "$music_latest" ]; then
+            pr "  YouTube Music: $music_current → $music_latest" >&2
+            if [ "$OS" = "Linux" ] || [ "$OS" = "GNU/Linux" ]; then
+                sed -i "/\[YouTube-Music-RVX\]/,/^$/{s/version = .*/version = \"$music_latest\"/}" "$config_file"
+            else
+                sed -i '' "/\[YouTube-Music-RVX\]/,/^$/{s/version = .*/version = \"$music_latest\"/}" "$config_file"
+            fi
+            updated=true
+        fi
+    fi
+
+    [ "$updated" = true ]
+}
+
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
