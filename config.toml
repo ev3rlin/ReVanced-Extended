@@ -24,7 +24,7 @@ patcher-args = "-e 'Custom branding' -OcustomName='YouTube RVX' -OcustomIcon='Va
 app-name = "YouTube Music"
 build-mode = "both"
 arch = "both"
-version = "8.28.54"
+version = "8.30.54"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube-music"
 uptodown-dlurl = "https://youtube-music.en.uptodown.com/android"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.apps.youtube.music"
