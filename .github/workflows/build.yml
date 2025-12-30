@@ -32,6 +32,7 @@ jobs:
           if git checkout origin/update build.md; then
             # Setup environment
             source utils.sh
+            set_prebuilts
 
             # Auto-update app versions from constants.kt (updates config.toml if needed)
             toml_prep config.toml
