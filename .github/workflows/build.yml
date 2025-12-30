@@ -50,13 +50,13 @@ jobs:
             fi
 
             # Commit updates to same branch if changes are present
-            git add config.toml build.md
+            git add config.toml
             if git diff --cached --quiet; then
               echo "No config changes to commit."
             else
               git config user.name "github-actions[bot]"
               git config user.email "github-actions[bot]@users.noreply.github.com"
-              git commit -m "Auto-update config.toml and build.md [CI]"
+              git commit -m "Auto-update config.toml [CI]"
               git push origin HEAD:$GITHUB_REF_NAME
             fi
           fi
