@@ -28,7 +28,22 @@ jobs:
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
+          # Trying to load update branch for check and auto-update
           if git checkout origin/update build.md; then
+            # Setup environment
+            source utils.sh
+            set_prebuilts
+
+            # Auto-update app versions from constants.kt (updates config.toml if needed)
+            toml_prep config.toml
+            if auto_update_app_versions "config.toml" "$(toml_get "$(toml_get_table_main)" patches-source)"; then
+              echo "App versions updated in config.toml"
+            fi
+
+            # Reload config after potential app version updates
+            toml_prep config.toml
+
+            # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
               echo "$UPDATE_CFG" > config.json
@@ -41,14 +56,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TODAY=$(date +'%Y-%m-%d')
-  
-          # считаем сколько релизов с такой датой уже есть
+
+          # count how many releases with this date already exist
           COUNT=$(gh release list --limit 100 \
             | grep "$TODAY" \
             | wc -l)
-  
+
             INDEX=$((COUNT + 1))
-  
+
             NAME="ReVanced Extended ${TODAY} (v${INDEX})"
             echo "NAME=$NAME" >> $GITHUB_OUTPUT
 
@@ -67,6 +82,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
           NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+
+      - name: Commit config after successful build
+        if: ${{ inputs.from_ci }}
+        run: |
+          git add config.toml
+          if git diff --cached --quiet; then
+            echo "No config changes to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Auto-update config.toml [CI]"
+            git push origin HEAD:$GITHUB_REF_NAME
+          fi
 
       - name: Get output
         id: get_output
@@ -94,6 +122,10 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
+          # restore updated config if produced earlier in this workflow run
+          if [ -f /tmp/config.toml.updated ]; then
+            cp -f /tmp/config.toml.updated ./config.toml || :
+          fi
           cp -f build.tmp build.md
           get_update_json() {
             echo "{
@@ -120,10 +152,11 @@ jobs:
           find . -name "*-update.json" | grep . || : >dummy-update.json
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+        if: github.ref_name == 'update'
         with:
           branch: update
           skip_checkout: true
-          file_pattern: build.md *-update.json
+          file_pattern: config.toml build.md *-update.json
           commit_message: Bump version ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
