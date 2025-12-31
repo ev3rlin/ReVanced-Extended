@@ -7,7 +7,7 @@ cli-source = "inotia00/revanced-cli"
 
 patches-version = "dev"
 
-rv-brand = "ReVanced Extended (patches by anddea)"
+rv-brand = "ReVanced Extended"
 
 [YouTube-RVX]
 app-name = "YouTube"
