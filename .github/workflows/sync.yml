@@ -21,4 +21,4 @@ jobs:
         with:
           source_repo_path: j-hc/revanced-magisk-module
           upstream_branch: main
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_gh_token: ${{ secrets.GITHUB_TOKEN }}
