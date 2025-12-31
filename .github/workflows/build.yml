@@ -50,38 +50,40 @@ jobs:
             fi
           fi
 
-      - name: Make release name
-        id: rel_name
+      - name: Make release name and get version
+        id: release_info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TODAY=$(date +'%Y-%m-%d')
+          BRANCH=${{ github.ref_name }}
 
-          # count how many releases with this date already exist
-          COUNT=$(gh release list --limit 100 \
-            | grep "$TODAY" \
-            | wc -l)
+          # Get all numeric tags, find highest, add 1
+          MAX_TAG=$(gh release list --limit 100 | awk -F '\t' '{print $3}' | grep -E '^[0-9]+$' | sort -rn | head -1)
+          if [ -z "$MAX_TAG" ]; then MAX_TAG=0; fi
+          NEXT_VER_CODE=$((MAX_TAG + 1))
 
-            INDEX=$((COUNT + 1))
+          # Count releases for this date to get index
+          COUNT=$(gh release list --limit 100 | grep "$TODAY" | wc -l)
+          INDEX=$((COUNT + 1))
 
-            NAME="ReVanced Extended ${TODAY} (v${INDEX})"
-            echo "NAME=$NAME" >> $GITHUB_OUTPUT
+          # Create release name based on branch
+          if [ "$BRANCH" = "dev" ]; then
+            NAME="ReVanced Extended - $TODAY [dev] (v$INDEX)"
+          else
+            NAME="ReVanced Extended - $TODAY (v$INDEX)"
+          fi
 
-      - name: Get next version code
-        id: next_ver_code
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
-          if [ -z "$TAG" ]; then TAG=0; fi
-          echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
+          echo "NAME=$NAME" >> $GITHUB_OUTPUT
+          echo "TAG=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
+          echo "NEXT_VER_CODE=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
 
       - name: Build modules/APKs
         run: if [ -f "config.json" ]; then ./build.sh config.json; else ./build.sh config.toml; fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
-          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          NEXT_VER_CODE: ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Commit config after successful build
         if: ${{ inputs.from_ci }}
@@ -111,10 +113,10 @@ jobs:
           body: ${{ steps.get_output.outputs.BUILD_LOG }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./build/*
-          release_name: ${{ steps.rel_name.outputs.NAME }}
-          tag: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          release_name: ${{ steps.release_info.outputs.NAME }}
+          tag: ${{ steps.release_info.outputs.TAG }}
           file_glob: true
-          overwrite: true
+          overwrite: false
           prerelease: ${{ github.ref_name == 'dev' }}
 
       - name: Update changelog and Magisk update json
@@ -130,7 +132,7 @@ jobs:
           get_update_json() {
             echo "{
             \"version\": \"$1\",
-            \"versionCode\": ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }},
+            \"versionCode\": ${{ steps.release_info.outputs.NEXT_VER_CODE }},
             \"zipUrl\": \"$2\",
             \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/update/build.md\"
           }"
@@ -144,7 +146,7 @@ jobs:
             UPDATE_JSON="${UPDATE_JSON##*/}"
             VER=$(echo "$ZIP_S" | grep version=)
             VER="${VER##*=}"
-            DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
+            DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.release_info.outputs.NEXT_VER_CODE }}/${OUTPUT}"
             get_update_json "$VER" "$DLURL" >"../$UPDATE_JSON"
           done
           cd ..
@@ -152,12 +154,12 @@ jobs:
           find . -name "*-update.json" | grep . || : >dummy-update.json
 
       - uses: stefanzweifel/git-auto-commit-action@v5
-        if: github.ref_name == 'update'
+        if: github.ref_name == 'main'
         with:
           branch: update
           skip_checkout: true
           file_pattern: config.toml build.md *-update.json
-          commit_message: Bump version ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
         env:
@@ -171,7 +173,7 @@ jobs:
           APKS=""
           MODULES=""
           for OUTPUT in *; do
-            DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
+            DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.release_info.outputs.NEXT_VER_CODE }}/${OUTPUT}"
             if [[ $OUTPUT = *.apk ]]; then
               APKS+="${NL}📦[${OUTPUT}](${DL_URL})"
             elif [[ $OUTPUT = *.zip ]]; then
