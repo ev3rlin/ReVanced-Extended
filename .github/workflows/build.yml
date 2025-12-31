@@ -57,23 +57,23 @@ jobs:
         run: |
           TODAY=$(date +'%Y-%m-%d')
           BRANCH=${{ github.ref_name }}
-          
+
           # Get all numeric tags, find highest, add 1
           MAX_TAG=$(gh release list --limit 100 | awk -F '\t' '{print $3}' | grep -E '^[0-9]+$' | sort -rn | head -1)
           if [ -z "$MAX_TAG" ]; then MAX_TAG=0; fi
           NEXT_VER_CODE=$((MAX_TAG + 1))
-          
+
           # Count releases for this date to get index
           COUNT=$(gh release list --limit 100 | grep "$TODAY" | wc -l)
           INDEX=$((COUNT + 1))
-          
+
           # Create release name based on branch
           if [ "$BRANCH" = "dev" ]; then
             NAME="ReVanced Extended - $TODAY [dev] (v$INDEX)"
           else
             NAME="ReVanced Extended - $TODAY (v$INDEX)"
           fi
-          
+
           echo "NAME=$NAME" >> $GITHUB_OUTPUT
           echo "TAG=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
           echo "NEXT_VER_CODE=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
