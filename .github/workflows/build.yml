@@ -127,7 +127,7 @@ jobs:
           cp -f config.toml /tmp/config.toml.backup
           
           git checkout -f update || git switch --discard-changes --orphan update
-          
+
           # Restore config.toml from main branch
           cp -f /tmp/config.toml.backup ./config.toml
           cp -f build.tmp build.md
