@@ -216,11 +216,15 @@ config_update() {
 				abort oops
 			fi
 			if [ "$last_patches" ]; then
-				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md | grep "$last_patches"); then
+				echo "DEBUG: last_patches=$last_patches, PATCHES_SRC=$PATCHES_SRC" >&2
+				echo "DEBUG: Searching for: ^Patches: ${PATCHES_SRC%%/*}/" >&2
+				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md 2>/dev/null | grep "$last_patches"); then
+					echo "DEBUG: NOT FOUND - will trigger rebuild" >&2
 					sources["$PATCHES_SRC/$PATCHES_VER"]=1
 					prcfg=true
 					upped+=("$table_name")
 				else
+					echo "DEBUG: FOUND - no rebuild needed" >&2
 					echo "$OP" >>"$TEMP_DIR"/skipped
 				fi
 			fi
