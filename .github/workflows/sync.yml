@@ -1,11 +1,5 @@
 name: Sync Upstream
 
-env:
-  UPSTREAM_URL: "https://github.com/j-hc/revanced-magisk-module.git"
-  WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-  UPSTREAM_BRANCH: "main"
-  DOWNSTREAM_BRANCH: "main"
-
 on:
   schedule:
     - cron: '0 20 * * *'
@@ -14,11 +8,21 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
-      - name: Sync Upstream
-        uses: dabreadman/sync-upstream-repo@v1.3.0
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync with upstream
+        uses: AndreasAugustin/actions-template-sync@v2
         with:
-          upstream_repo: ${{ env.UPSTREAM_URL }}
-          upstream_branch: ${{ env.UPSTREAM_BRANCH }}
-          downstream_branch: ${{ env.DOWNSTREAM_BRANCH }}
-          token: ${{ env.WORKFLOW_TOKEN }}
+          source_repo_path: j-hc/revanced-magisk-module
+          upstream_branch: main
+          source_gh_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_branch_name_prefix: chore-upstream-sync
+          pr_title: "chore: sync with upstream"
+          pr_labels: upstream-sync,automated
+          git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
