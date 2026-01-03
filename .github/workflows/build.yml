@@ -123,13 +123,7 @@ jobs:
         id: update_config
         if: github.ref_name == 'main'
         run: |
-          # Save config.toml from current branch before switching
-          cp -f config.toml /tmp/config.toml.backup
-          
           git checkout -f update || git switch --discard-changes --orphan update
-
-          # Restore config.toml from main branch
-          cp -f /tmp/config.toml.backup ./config.toml
           cp -f build.tmp build.md
           get_update_json() {
             echo "{
@@ -160,7 +154,7 @@ jobs:
         with:
           branch: update
           skip_checkout: true
-          file_pattern: config.toml build.md *-update.json
+          file_pattern: build.md *-update.json
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
