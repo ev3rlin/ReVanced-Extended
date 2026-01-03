@@ -24,30 +24,33 @@ jobs:
           set_prebuilts
           toml_prep config.toml
 
-          # Check if this is first build
-          if ! git checkout origin/update build.md; then
-            echo "first time building!"
-            echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          SHOULD_BUILD=0
 
-          # Check for app version updates from constants.kt (using temporary file)
+          # Check for app version updates from constants.kt
           cp config.toml /tmp/config.toml.check
           if auto_update_app_versions /tmp/config.toml.check "$(toml_get "$(toml_get_table_main)" patches-source)"; then
             echo "App versions updated"
-            echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
-            exit 0
+            SHOULD_BUILD=1
+          fi
+
+          # Check if update branch exists (first build check)
+          if ! git show origin/update:build.md > /tmp/build.md 2>/dev/null; then
+            echo "first time building!"
+            SHOULD_BUILD=1
           fi
 
           # Check for patches updates
           UPDATE_CFG=$(./build.sh config.toml --config-update)
           if [ "$UPDATE_CFG" ]; then
             echo "Patches updated: $UPDATE_CFG"
-            echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
-          else
-            echo "No updates found"
-            echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
+            SHOULD_BUILD=1
           fi
+
+          if [ "$SHOULD_BUILD" = 0 ]; then
+            echo "No updates found"
+          fi
+
+          echo "SHOULD_BUILD=$SHOULD_BUILD" >> $GITHUB_OUTPUT
 
       - name: Clear older runs
         env:
