@@ -28,21 +28,21 @@ jobs:
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
-          # Trying to load update branch for check and auto-update
-          if git checkout origin/update build.md; then
-            # Setup environment
-            source utils.sh
-            set_prebuilts
+          # Setup environment
+          source utils.sh
+          set_prebuilts
 
-            # Auto-update app versions from constants.kt (updates config.toml if needed)
-            toml_prep config.toml
-            if auto_update_app_versions "config.toml" "$(toml_get "$(toml_get_table_main)" patches-source)"; then
-              echo "App versions updated in config.toml"
-            fi
+          # Auto-update app versions from constants.kt (always, regardless of build.md)
+          toml_prep config.toml
+          if auto_update_app_versions "config.toml" "$(toml_get "$(toml_get_table_main)" patches-source)"; then
+            echo "App versions updated in config.toml"
+          fi
 
-            # Reload config after potential app version updates
-            toml_prep config.toml
+          # Reload config after potential app version updates
+          toml_prep config.toml
 
+          # Load build.md from update branch if it exists (for patches updates check)
+          if git show origin/update:build.md > build.md 2>/dev/null; then
             # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
@@ -124,10 +124,6 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
-          # restore updated config if produced earlier in this workflow run
-          if [ -f /tmp/config.toml.updated ]; then
-            cp -f /tmp/config.toml.updated ./config.toml || :
-          fi
           cp -f build.tmp build.md
           get_update_json() {
             echo "{
@@ -158,7 +154,7 @@ jobs:
         with:
           branch: update
           skip_checkout: true
-          file_pattern: config.toml build.md *-update.json
+          file_pattern: build.md *-update.json
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
