@@ -28,21 +28,21 @@ jobs:
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
-          # Load build.md from update branch without making it tracked
+          # Setup environment
+          source utils.sh
+          set_prebuilts
+
+          # Auto-update app versions from constants.kt (always, regardless of build.md)
+          toml_prep config.toml
+          if auto_update_app_versions "config.toml" "$(toml_get "$(toml_get_table_main)" patches-source)"; then
+            echo "App versions updated in config.toml"
+          fi
+
+          # Reload config after potential app version updates
+          toml_prep config.toml
+
+          # Load build.md from update branch if it exists (for patches updates check)
           if git show origin/update:build.md > build.md 2>/dev/null; then
-            # Setup environment
-            source utils.sh
-            set_prebuilts
-
-            # Auto-update app versions from constants.kt (updates config.toml if needed)
-            toml_prep config.toml
-            if auto_update_app_versions "config.toml" "$(toml_get "$(toml_get_table_main)" patches-source)"; then
-              echo "App versions updated in config.toml"
-            fi
-
-            # Reload config after potential app version updates
-            toml_prep config.toml
-
             # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
