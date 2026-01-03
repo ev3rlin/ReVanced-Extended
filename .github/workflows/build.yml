@@ -28,8 +28,8 @@ jobs:
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
-          # Trying to load update branch for check and auto-update
-          if git checkout origin/update build.md; then
+          # Load build.md from update branch without making it tracked
+          if git show origin/update:build.md > build.md 2>/dev/null; then
             # Setup environment
             source utils.sh
             set_prebuilts
