@@ -34,16 +34,16 @@ jobs:
           fi
 
           # Check if update branch exists (first build check)
-          if ! git show origin/update:build.md > /tmp/build.md 2>/dev/null; then
+          if ! git show origin/update:build.md > build.md 2>/dev/null; then
             echo "first time building!"
             SHOULD_BUILD=1
-          fi
-
-          # Check for patches updates
-          UPDATE_CFG=$(./build.sh config.toml --config-update)
-          if [ "$UPDATE_CFG" ]; then
-            echo "Patches updated: $UPDATE_CFG"
-            SHOULD_BUILD=1
+          else
+            # Only check for patches updates if update branch exists
+            UPDATE_CFG=$(./build.sh config.toml --config-update)
+            if [ "$UPDATE_CFG" ]; then
+              echo "Patches updated: $UPDATE_CFG"
+              SHOULD_BUILD=1
+            fi
           fi
 
           if [ "$SHOULD_BUILD" = 0 ]; then
