@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Sync with upstream
         uses: AndreasAugustin/actions-template-sync@v2
@@ -22,6 +24,7 @@ jobs:
           source_repo_path: j-hc/revanced-magisk-module
           upstream_branch: main
           source_gh_token: ${{ secrets.GITHUB_TOKEN }}
+          target_gh_token: ${{ secrets.REVANCED_EXTENDED_ANDREASAUGUSTIN_PAT }}
           pr_branch_name_prefix: chore-upstream-sync
           pr_title: "chore: sync with upstream"
           pr_labels: upstream-sync,automated
