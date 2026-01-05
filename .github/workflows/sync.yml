@@ -43,7 +43,7 @@ jobs:
         if: steps.check.outputs.has_changes == 'true'
         run: |
           git checkout -b sync/upstream
-          git merge upstream/main --no-edit -X theirs --allow-unrelated-histories || true
+          git merge upstream/main --no-edit --allow-unrelated-histories || true
           git push origin sync/upstream --force
 
       - name: Create Pull Request
