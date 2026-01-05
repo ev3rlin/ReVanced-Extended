@@ -22,12 +22,15 @@ toml_get_table_names() { jq -r -e 'to_entries[] | select(.value | type == "objec
 toml_get_table_main() { jq -r -e 'to_entries | map(select(.value | type != "object")) | from_entries' <<<"$__TOML__"; }
 toml_get_table() { jq -r -e ".\"${1}\"" <<<"$__TOML__"; }
 toml_get() {
-	local op
+	local op quote_placeholder=$'\001'
 	op=$(jq -r ".\"${2}\" | values" <<<"$1")
 	if [ "$op" ]; then
 		op="${op#"${op%%[![:space:]]*}"}"
 		op="${op%"${op##*[![:space:]]}"}"
+		op=${op//\\\'/$quote_placeholder}
+		op=${op//"''"/$quote_placeholder}
 		op=${op//"'"/'"'}
+		op=${op//$quote_placeholder/$'\''}
 		echo "$op"
 	else return 1; fi
 }
@@ -101,15 +104,7 @@ get_rv_prebuilts() {
 			tag_name=v${tag_name%.*}
 		fi
 		if [ "$tag" = "Patches" ]; then
-			# Initial changelog structure
 			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
-
-			# Enhanced changelog structure with body extraction
-			# if [ $grab_cl = true ]; then
-			# 	local changelog_body=$(jq -r '.body // empty' <<<"$resp")
-    		# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
-			# fi
-
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				if ! (
 					mkdir -p "${file}-zip" || return 1
@@ -138,53 +133,6 @@ set_prebuilts() {
 	HTMLQ="${BIN_DIR}/htmlq/htmlq-${arch}"
 	AAPT2="${BIN_DIR}/aapt2/aapt2-${arch}"
 	TOML="${BIN_DIR}/toml/tq-${arch}"
-}
-
-get_latest_app_version() {
-    local src=$1 app=$2
-    local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
-    curl -s "https://raw.githubusercontent.com/${src}/dev/${ver_file}" 2>/dev/null \
-        | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -1
-}
-
-auto_update_app_versions() {
-    local config_file=${1:-config.toml}
-    local patches_src=${2:-$DEF_PATCHES_SRC}
-    local updated=false
-
-    pr "Checking for app version updates from ${patches_src}..." >&2
-
-    # YouTube
-    local yt_latest=$(get_latest_app_version "$patches_src" "youtube")
-    if [ -n "$yt_latest" ]; then
-        local yt_current=$(toml_get "$(toml_get_table YouTube-RVX)" version 2>/dev/null || echo "")
-        if [ -n "$yt_current" ] && [ "$yt_current" != "$yt_latest" ]; then
-            pr "  YouTube: $yt_current → $yt_latest" >&2
-            if [ "$OS" = "Linux" ] || [ "$OS" = "GNU/Linux" ]; then
-                sed -i "/\[YouTube-RVX\]/,/^$/{s/version = .*/version = \"$yt_latest\"/}" "$config_file"
-            else
-                sed -i '' "/\[YouTube-RVX\]/,/^$/{s/version = .*/version = \"$yt_latest\"/}" "$config_file"
-            fi
-            updated=true
-        fi
-    fi
-
-    # YouTube Music
-    local music_latest=$(get_latest_app_version "$patches_src" "music")
-    if [ -n "$music_latest" ]; then
-        local music_current=$(toml_get "$(toml_get_table YouTube-Music-RVX)" version 2>/dev/null || echo "")
-        if [ -n "$music_current" ] && [ "$music_current" != "$music_latest" ]; then
-            pr "  YouTube Music: $music_current → $music_latest" >&2
-            if [ "$OS" = "Linux" ] || [ "$OS" = "GNU/Linux" ]; then
-                sed -i "/\[YouTube-Music-RVX\]/,/^$/{s/version = .*/version = \"$music_latest\"/}" "$config_file"
-            else
-                sed -i '' "/\[YouTube-Music-RVX\]/,/^$/{s/version = .*/version = \"$music_latest\"/}" "$config_file"
-            fi
-            updated=true
-        fi
-    fi
-
-    [ "$updated" = true ]
 }
 
 config_update() {
@@ -216,7 +164,7 @@ config_update() {
 				abort oops
 			fi
 			if [ "$last_patches" ]; then
-				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md 2>/dev/null | grep "$last_patches"); then
+				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md | grep "$last_patches"); then
 					sources["$PATCHES_SRC/$PATCHES_VER"]=1
 					prcfg=true
 					upped+=("$table_name")
@@ -378,11 +326,14 @@ dl_apkmirror() {
 		resp=$(req "$url" -) || return 1
 		node=$($HTMLQ "div.table-row.headerFont:nth-last-child(1)" -r "span:nth-child(n+3)" <<<"$resp")
 		if [ "$node" ]; then
-			if ! dlurl=$(apk_mirror_search "$resp" "$dpi" "${arch}" "APK"); then
-				if ! dlurl=$(apk_mirror_search "$resp" "$dpi" "${arch}" "BUNDLE"); then
-					return 1
-				else is_bundle=true; fi
-			fi
+			for current_dpi in $dpi; do
+				for type in APK BUNDLE; do
+					if dlurl=$(apk_mirror_search "$resp" "$current_dpi" "${arch}" "$type"); then
+						[[ "$type" == "BUNDLE" ]] && is_bundle=true || is_bundle=false
+						break 2
+					fi
+				done
+			done
 			[ -z "$dlurl" ] && return 1
 			resp=$(req "$dlurl" -)
 		fi
@@ -415,7 +366,7 @@ get_apkmirror_vers() {
 }
 get_apkmirror_pkg_name() { sed -n 's;.*id=\(.*\)" class="accent_color.*;\1;p' <<<"$__APKMIRROR_RESP__"; }
 get_apkmirror_resp() {
-	__APKMIRROR_RESP__=$(req "${1}" -)
+	__APKMIRROR_RESP__=$(req "${1}" -) || return 1
 	__APKMIRROR_CAT__="${1##*/}"
 }
 
@@ -492,10 +443,6 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 
 patch_apk() {
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 rv_cli_jar=$4 rv_patches_jar=$5
-
-	# TODO
-	# Probably add \" \" to both $stock_input and $patched_apk if braces in rv-brand are an issue
-
 	local cmd="env -u GITHUB_REPOSITORY java -jar $rv_cli_jar patch $stock_input --purge -o $patched_apk -p $rv_patches_jar --keystore=ks.keystore \
 --keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
 	if [ "$OS" = Android ]; then cmd+=" --custom-aapt2-binary=${AAPT2}"; fi
@@ -713,7 +660,7 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
-author=ev3rlin
+author=j-hc
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MAGISK_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
