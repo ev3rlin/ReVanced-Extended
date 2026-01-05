@@ -117,7 +117,7 @@ jobs:
           tag: ${{ steps.release_info.outputs.TAG }}
           file_glob: true
           overwrite: false
-          prerelease: ${{ github.ref_name == 'dev' }}
+          prerelease: ${{ github.ref_name != 'main' }}
 
       - name: Update changelog and Magisk update json
         id: update_config
