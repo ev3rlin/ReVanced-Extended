@@ -28,7 +28,6 @@ jobs:
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
-<<<<<<< HEAD
           # Setup environment
           source utils.sh
           set_prebuilts
@@ -45,16 +44,12 @@ jobs:
           # Load build.md from update branch if it exists (for patches updates check)
           if git show origin/update:build.md > build.md 2>/dev/null; then
             # Generates config.json if there are patches updates
-=======
-          if git checkout origin/update build.md; then
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
               echo "$UPDATE_CFG" > config.json
             fi
           fi
 
-<<<<<<< HEAD
       - name: Make release name and get version
         id: release_info
         env:
@@ -82,23 +77,12 @@ jobs:
           echo "NAME=$NAME" >> $GITHUB_OUTPUT
           echo "TAG=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
           echo "NEXT_VER_CODE=$NEXT_VER_CODE" >> $GITHUB_OUTPUT
-=======
-      - name: Get next version code
-        id: next_ver_code
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
-          if [ -z "$TAG" ]; then TAG=0; fi
-          echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
 
       - name: Build modules/APKs
         run: if [ -f "config.json" ]; then ./build.sh config.json; else ./build.sh config.toml; fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
-<<<<<<< HEAD
           NEXT_VER_CODE: ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Commit config after successful build
@@ -113,9 +97,6 @@ jobs:
             git commit -m "Auto-update config.toml [CI]"
             git push origin HEAD:$GITHUB_REF_NAME
           fi
-=======
-          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
 
       - name: Get output
         id: get_output
@@ -132,7 +113,6 @@ jobs:
           body: ${{ steps.get_output.outputs.BUILD_LOG }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./build/*
-<<<<<<< HEAD
           release_name: ${{ steps.release_info.outputs.NAME }}
           tag: ${{ steps.release_info.outputs.TAG }}
           file_glob: true
@@ -142,26 +122,13 @@ jobs:
       - name: Update changelog and Magisk update json
         id: update_config
         if: github.ref_name == 'main'
-=======
-          release_name: ReVanced
-          tag: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
-          file_glob: true
-          overwrite: true
-
-      - name: Update changelog and Magisk update json
-        id: update_config
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
           get_update_json() {
             echo "{
             \"version\": \"$1\",
-<<<<<<< HEAD
             \"versionCode\": ${{ steps.release_info.outputs.NEXT_VER_CODE }},
-=======
-            \"versionCode\": ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }},
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
             \"zipUrl\": \"$2\",
             \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/update/build.md\"
           }"
@@ -175,11 +142,7 @@ jobs:
             UPDATE_JSON="${UPDATE_JSON##*/}"
             VER=$(echo "$ZIP_S" | grep version=)
             VER="${VER##*=}"
-<<<<<<< HEAD
             DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.release_info.outputs.NEXT_VER_CODE }}/${OUTPUT}"
-=======
-            DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
             get_update_json "$VER" "$DLURL" >"../$UPDATE_JSON"
           done
           cd ..
@@ -187,19 +150,12 @@ jobs:
           find . -name "*-update.json" | grep . || : >dummy-update.json
 
       - uses: stefanzweifel/git-auto-commit-action@v5
-<<<<<<< HEAD
         if: github.ref_name == 'main'
-=======
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
         with:
           branch: update
           skip_checkout: true
           file_pattern: build.md *-update.json
-<<<<<<< HEAD
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
-=======
-          commit_message: Bump version ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
 
       - name: Report to Telegram
         env:
@@ -213,11 +169,7 @@ jobs:
           APKS=""
           MODULES=""
           for OUTPUT in *; do
-<<<<<<< HEAD
             DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.release_info.outputs.NEXT_VER_CODE }}/${OUTPUT}"
-=======
-            DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
->>>>>>> bc3646b5b31a6774539d22f72f4d45ad31a339a3
             if [[ $OUTPUT = *.apk ]]; then
               APKS+="${NL}📦[${OUTPUT}](${DL_URL})"
             elif [[ $OUTPUT = *.zip ]]; then
