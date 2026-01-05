@@ -13,13 +13,28 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Sync with upstream
-        uses: repo-sync/pull-request@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          source_repo: j-hc/revanced-magisk-module
-          source_branch: main
-          destination_repo: ${{ github.repository }}
-          destination_branch: main
-          pr_title: "chore: sync with upstream"
-          pr_label: "upstream-sync,automated"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync with upstream
+        run: |
+          git remote add upstream https://github.com/j-hc/revanced-magisk-module.git || true
+          git fetch upstream main
+          git merge upstream/main --no-edit || true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore-upstream-sync
+          commit-message: "chore: sync with upstream"
+          title: "chore: sync with upstream"
+          body: "Synced with upstream repository"
+          labels: "upstream-sync,automated"
