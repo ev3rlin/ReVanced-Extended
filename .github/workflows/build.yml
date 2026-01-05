@@ -185,8 +185,8 @@ jobs:
           MODULES=${MODULES#"$NL"}
           APKS=${APKS#"$NL"}
 
-          NOTES+="${NL}ℹ️ Install [Microg](${MICROG_URL}) for non-root YouTube and YT Music APKs"
-          NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root ReVanced YouTube and YT Music from Play Store"
+          NOTES+="${NL}ℹ️ Install [Microg](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
+          NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
           NOTES=${NOTES#"$NL"}
 
           BODY="$(sed 's/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/###//g; s/^- /↪ /g; /^==/d;' ../build.md)"
