@@ -15,29 +15,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Sync with upstream
-        run: |
-          git remote add upstream https://github.com/j-hc/revanced-magisk-module.git || true
-          git fetch upstream main:upstream-main
-          git merge upstream-main --no-edit --allow-unrelated-histories -X theirs || true
-          git add -A
-          git commit -m "chore: merge upstream (resolved conflicts with local changes)" || true
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: AndreasAugustin/actions-template-sync@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: chore-upstream-sync
-          commit-message: "chore: sync with upstream"
-          title: "chore: sync with upstream"
-          body: "Synced with upstream repository"
-          labels: "upstream-sync,automated"
+          source_repo_path: j-hc/revanced-magisk-module
+          upstream_branch: main
+          source_gh_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_branch_name_prefix: chore-upstream-sync
+          pr_title: "chore: sync with upstream"
+          pr_labels: upstream-sync,automated
+          git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
