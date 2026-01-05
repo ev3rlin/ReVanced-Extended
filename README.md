@@ -7,7 +7,7 @@ Get the [latest CI release](https://github.com/j-hc/revanced-magisk-module/relea
 
 ## Features
 
-  * Updated automatically with the latest supported versions of apps and [anddea patches (dev version)](https://github.com/anddea/revanced-patches)
+  * Updated automatically with the latest supported versions of apps and [anddea patches (stable version)](https://github.com/anddea/revanced-patches)
   * Optimize APKs and modules for size
   * Fully open-source and free to use
   * Modules:
