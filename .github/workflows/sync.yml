@@ -1,88 +1,31 @@
-name: Sync upstream
+name: Sync Upstream
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: '0 20 * * *'
   workflow_dispatch:
-
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Check for upstream changes
-        id: check
-        run: |
-          git remote add upstream https://github.com/j-hc/revanced-magisk-module.git
-          git fetch upstream
-
-          if git diff --quiet HEAD..upstream/main; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No changes from upstream"
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Found changes from upstream"
-          fi
-
-      - name: Create sync branch
-        if: steps.check.outputs.has_changes == 'true'
-        run: |
-          git checkout -b sync/upstream
-          git merge upstream/main --no-edit --allow-unrelated-histories || true
-
-          # Remove workflow files from merge to avoid permission issues
-          git checkout --ours .github/workflows/
-
-          git add -A
-          git commit -m "chore: merge upstream (conflicts to resolve)" || true
-          git push origin sync/upstream --force
-
-      - name: Create Pull Request
-        if: steps.check.outputs.has_changes == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Check if PR already exists
-          EXISTING_PR=$(curl -s -H "Authorization: token $GH_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:sync/upstream&state=open" \
-            | jq '.[0].number // empty')
-
-          if [ -z "$EXISTING_PR" ]; then
-            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls" \
-              -d '{
-                "title": "chore: sync with upstream",
-                "head": "sync/upstream",
-                "base": "main",
-                "body": "Automated sync with upstream repository.\n\nSource: https://github.com/j-hc/revanced-magisk-module"
-              }')
-
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-
-            if [ "$HTTP_CODE" -eq 201 ]; then
-              echo "Pull request created successfully"
-            else
-              echo "Failed to create PR (HTTP $HTTP_CODE):"
-              echo "$BODY"
-              exit 1
-            fi
-          else
-            echo "PR #$EXISTING_PR already exists"
-          fi
+      - name: Sync with upstream
+        uses: AndreasAugustin/actions-template-sync@v2
+        with:
+          source_repo_path: j-hc/revanced-magisk-module
+          upstream_branch: main
+          source_gh_token: ${{ secrets.GITHUB_TOKEN }}
+          target_gh_token: ${{ secrets.REVANCED_EXTENDED_ANDREASAUGUSTIN_PAT }}
+          pr_branch_name_prefix: chore-upstream-sync
+          pr_title: "chore: sync with upstream"
+          pr_labels: upstream-sync,automated
+          git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
