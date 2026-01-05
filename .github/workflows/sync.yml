@@ -44,6 +44,10 @@ jobs:
         run: |
           git checkout -b sync/upstream
           git merge upstream/main --no-edit --allow-unrelated-histories || true
+
+          # Remove workflow files from merge to avoid permission issues
+          git checkout --ours .github/workflows/
+
           git add -A
           git commit -m "chore: merge upstream (conflicts to resolve)" || true
           git push origin sync/upstream --force
