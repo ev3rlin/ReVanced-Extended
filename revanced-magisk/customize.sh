@@ -176,5 +176,9 @@ nohup cmd package compile --reset "$PKG_NAME" >/dev/null 2>&1 &
 rm -rf "${MODPATH:?}/bin" "$MODPATH/$PKG_NAME.apk"
 
 ui_print "* Done"
+<<<<<<< HEAD
 ui_print "  by ev3rlin (https://github.com/ev3rlin)"
+=======
+ui_print "  by j-hc (github.com/j-hc)"
+>>>>>>> e42b4c7764bdb69ea640fd0da93401398028cea8
 ui_print " "
