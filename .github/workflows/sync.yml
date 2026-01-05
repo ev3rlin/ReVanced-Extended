@@ -28,7 +28,9 @@ jobs:
         run: |
           git remote add upstream https://github.com/j-hc/revanced-magisk-module.git || true
           git fetch upstream main:upstream-main
-          git merge upstream-main --no-edit --allow-unrelated-histories || true
+          git merge upstream-main --no-edit --allow-unrelated-histories -X theirs || true
+          git add -A
+          git commit -m "chore: merge upstream (resolved conflicts with local changes)" || true
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
