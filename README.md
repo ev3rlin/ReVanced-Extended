@@ -6,7 +6,7 @@
   [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ev3rlin_rvx)
 
   [![License](https://img.shields.io/github/license/ev3rlin/ReVanced-Extended)](https://github.com/ev3rlin/ReVanced-Extended?tab=GPL-3.0-1-ov-file#readme)
-  [![CI](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml/badge.svg?event=schedule)](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml)
+  [![CI](https://github.com/ev3rlin/ReVanced-Extended/actions/workflows/ci.yml/badge.svg?event=schedule)](https://github.com/ev3rlin/ReVanced-Extended/actions/workflows/ci.yml)
 
   [![Release date](https://img.shields.io/github/release-date/ev3rlin/ReVanced-Extended)](https://github.com/ev3rlin/ReVanced-Extended/releases)
   [![Release version](https://img.shields.io/github/v/release/ev3rlin/ReVanced-Extended?display_name=release)](https://github.com/ev3rlin/ReVanced-Extended/releases/latest)
