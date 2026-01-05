@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/ev3rlin_rvx.png" width="200" alt="ReVanced Extended Logo by @ev3rlin">
+  <img src="assets/logo.png" width="200" alt="ReVanced Extended Logo by @ev3rlin">
 
   # ReVanced Extended Magisk Module (mod by [@ev3rlin](https://github.com/ev3rlin))
 
