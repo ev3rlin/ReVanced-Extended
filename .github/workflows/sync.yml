@@ -11,19 +11,15 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Sync with upstream
-        uses: AndreasAugustin/actions-template-sync@v2
+        uses: repo-sync/pull-request@v2
         with:
-          source_repo_path: j-hc/revanced-magisk-module
-          upstream_branch: main
-          source_gh_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_branch_name_prefix: chore-upstream-sync
+          source_repo: j-hc/revanced-magisk-module
+          source_branch: main
+          destination_repo: ${{ github.repository }}
+          destination_branch: main
           pr_title: "chore: sync with upstream"
-          pr_labels: upstream-sync,automated
-          git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
+          pr_label: "upstream-sync,automated"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
