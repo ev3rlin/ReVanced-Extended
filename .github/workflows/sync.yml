@@ -44,6 +44,8 @@ jobs:
         run: |
           git checkout -b sync/upstream
           git merge upstream/main --no-edit --allow-unrelated-histories || true
+          git add -A
+          git commit -m "chore: merge upstream (conflicts to resolve)" || true
           git push origin sync/upstream --force
 
       - name: Create Pull Request
