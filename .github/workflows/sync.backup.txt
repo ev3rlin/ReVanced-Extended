@@ -1,0 +1,82 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for upstream changes
+        id: check
+        run: |
+          git remote add upstream https://github.com/j-hc/revanced-magisk-module.git
+          git fetch upstream
+
+          if git diff --quiet HEAD..upstream/main; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes from upstream"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Found changes from upstream"
+          fi
+
+      - name: Create sync branch
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          git checkout -b sync/upstream
+          git merge upstream/main --no-edit -X theirs --allow-unrelated-histories || true
+          git push origin sync/upstream --force
+
+      - name: Create Pull Request
+        if: steps.check.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if PR already exists
+          EXISTING_PR=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:sync/upstream&state=open" \
+            | jq '.[0].number // empty')
+
+          if [ -z "$EXISTING_PR" ]; then
+            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls" \
+              -d '{
+                "title": "chore: sync with upstream",
+                "head": "sync/upstream",
+                "base": "main",
+                "body": "Automated sync with upstream repository.\n\nSource: https://github.com/j-hc/revanced-magisk-module"
+              }')
+
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | sed '$d')
+
+            if [ "$HTTP_CODE" -eq 201 ]; then
+              echo "Pull request created successfully"
+            else
+              echo "Failed to create PR (HTTP $HTTP_CODE):"
+              echo "$BODY"
+              exit 1
+            fi
+          else
+            echo "PR #$EXISTING_PR already exists"
+          fi

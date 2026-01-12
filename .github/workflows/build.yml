@@ -117,7 +117,7 @@ jobs:
           tag: ${{ steps.release_info.outputs.TAG }}
           file_glob: true
           overwrite: false
-          prerelease: ${{ github.ref_name == 'dev' }}
+          prerelease: ${{ github.ref_name != 'main' }}
 
       - name: Update changelog and Magisk update json
         id: update_config
@@ -160,14 +160,19 @@ jobs:
       - name: Report to Telegram
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
-        if: env.TG_TOKEN != null
+        if: env.TG_TOKEN != null && github.ref_name == 'main'
         run: |
           cd build || { echo "build folder not found"; exit 1; }
 
-          TG_CHAT="@rvc_magisk"
+          TG_CHAT="@ev3rlin_rvx"
+
           NL=$'\n'
           APKS=""
           MODULES=""
+          NOTES=""
+          MICROG_URL="https://github.com/ReVanced/GmsCore/releases"
+          ZYGISK_DETACH_URL="https://github.com/j-hc/zygisk-detach"
+
           for OUTPUT in *; do
             DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.release_info.outputs.NEXT_VER_CODE }}/${OUTPUT}"
             if [[ $OUTPUT = *.apk ]]; then
@@ -176,13 +181,21 @@ jobs:
               MODULES+="${NL}📦[${OUTPUT}](${DL_URL})"
             fi
           done
+
           MODULES=${MODULES#"$NL"}
           APKS=${APKS#"$NL"}
+
+          NOTES+="${NL}ℹ️ Install [Microg](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
+          NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
+          NOTES=${NOTES#"$NL"}
 
           BODY="$(sed 's/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/###//g; s/^- /↪ /g; /^==/d;' ../build.md)"
           MSG="*New build!*
 
           ${BODY}
+
+          *▼ Installation Notes:*
+          ${NOTES}
 
           *▼ Download Links:*
           Modules:

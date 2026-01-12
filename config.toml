@@ -1,6 +1,11 @@
 enable-magisk-update = true # set this to false if you do not want to receive updates for the module in magisk app
 parallel-jobs = 1
 
+# add 'enabled = false' for not patching a specific app or remove it from the config
+# see https://github.com/j-hc/revanced-magisk-module/blob/main/CONFIG.md for more detailed explanations
+
+# you can use rvmm-config-gen to generate a config
+
 patches-source = "anddea/revanced-patches"
 integrations-source = "anddea/revanced-integrations"
 cli-source = "inotia00/revanced-cli"
@@ -20,6 +25,7 @@ excluded-patches = "'Custom header for YouTube'"
 included-patches = "'Visual preferences icons for YouTube' 'Return YouTube Username'"
 patcher-args = "-e 'Custom branding name for YouTube' -OappName='YouTube RVX' -e 'Custom branding icon for YouTube' -OappIcon='vanced_black' -e 'Theme' -OlightThemeBackgroundColor=#FFF9F9F9"
 
+# https://github.com/j-hc/revanced-magisk-module/issues/554
 [YouTube-Music-RVX]
 app-name = "YouTube Music"
 build-mode = "both"
