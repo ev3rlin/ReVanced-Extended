@@ -1,0 +1,2 @@
+# Ignore workflows when syncing from the template repository
+.github/workflows/**

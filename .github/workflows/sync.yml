@@ -29,3 +29,4 @@ jobs:
           pr_title: "chore: sync with upstream"
           pr_labels: upstream-sync,automated
           git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
+          template_sync_ignore_file_path: .templatesyncignore
