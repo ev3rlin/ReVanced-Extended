@@ -49,15 +49,9 @@ fi
 if ((COMPRESSION_LEVEL > 9)) || ((COMPRESSION_LEVEL < 0)); then abort "compression-level must be within 0-9"; fi
 
 rm -rf revanced-magisk/bin/*/tmp.*
-<<<<<<< HEAD
-if [ "$(echo "$TEMP_DIR"/*-rv/changelog.md)" ]; then
-	: >"$TEMP_DIR"/*-rv/changelog.md || :
-fi
-=======
 for file in "$TEMP_DIR"/*/changelog.md; do
     [ -f "$file" ] && : > "$file"
 done
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 
 mkdir -p ${MODULE_TEMPLATE_DIR}/bin/arm64 ${MODULE_TEMPLATE_DIR}/bin/arm ${MODULE_TEMPLATE_DIR}/bin/x86 ${MODULE_TEMPLATE_DIR}/bin/x64
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/arm64/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-arm64-v8a"
@@ -84,21 +78,12 @@ for table_name in $(toml_get_table_names); do
 	cli_src=$(toml_get "$t" cli-source) || cli_src=$DEF_CLI_SRC
 	cli_ver=$(toml_get "$t" cli-version) || cli_ver=$DEF_CLI_VER
 
-<<<<<<< HEAD
-	if ! RVP="$(get_rv_prebuilts "$cli_src" "$cli_ver" "$patches_src" "$patches_ver")"; then
-		abort "could not download rv prebuilts"
-	fi
-	read -r rv_cli_jar rv_patches_jar <<<"$RVP"
-	app_args[cli]=$rv_cli_jar
-	app_args[ptjar]=$rv_patches_jar
-=======
 	if ! PREBUILTS="$(get_prebuilts "$cli_src" "$cli_ver" "$patches_src" "$patches_ver")"; then
 		abort "could not download rv prebuilts"
 	fi
 	read -r cli_jar patches_jar <<<"$PREBUILTS"
 	app_args[cli]=$cli_jar
 	app_args[ptjar]=$patches_jar
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	if [[ -v cliriplib[${app_args[cli]}] ]]; then app_args[riplib]=${cliriplib[${app_args[cli]}]}; else
 		if [[ $(java -jar "${app_args[cli]}" patch 2>&1) == *rip-lib* ]]; then
 			cliriplib[${app_args[cli]}]=true
@@ -181,20 +166,13 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
-<<<<<<< HEAD
 # Initial changelog logic
 # log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
 # log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
-# log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
+# log "$(cat "$TEMP_DIR"/*/changelog.md)"
 
-log "\n$(cat "$TEMP_DIR"/*-rv/changelog.md)"
-=======
-log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
-log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
-log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
-log "$(cat "$TEMP_DIR"/*/changelog.md)"
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
+log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -202,7 +180,6 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
-<<<<<<< HEAD
 # New skipped changelog logic with links
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
@@ -219,6 +196,4 @@ fi
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
 
-=======
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 pr "Done"

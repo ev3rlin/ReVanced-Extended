@@ -5,10 +5,7 @@ CWD=$(pwd)
 TEMP_DIR="temp"
 BIN_DIR="bin"
 BUILD_DIR="build"
-<<<<<<< HEAD
-=======
 PATCH_EXT=""
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 
 if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
 NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
@@ -42,53 +39,31 @@ toml_get() {
 pr() { echo -e "\033[0;32m[+] ${1}\033[0m"; }
 epr() {
 	echo >&2 -e "\033[0;31m[-] ${1}\033[0m"
-<<<<<<< HEAD
-	if [ "${GITHUB_REPOSITORY-}" ]; then echo -e "::error::utils.sh [-] ${1}\n"; fi
-=======
 	if [ "${GITHUB_REPOSITORY-}" ]; then echo >&2 -e "::error::utils.sh [-] ${1}\n"; fi
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 }
 abort() {
 	epr "ABORT: ${1-}"
 	exit 1
 }
 
-<<<<<<< HEAD
-get_rv_prebuilts() {
-=======
 get_prebuilts() {
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	local cli_src=$1 cli_ver=$2 patches_src=$3 patches_ver=$4
 	pr "Getting prebuilts (${patches_src%/*})" >&2
 	local cl_dir=${patches_src%/*}
 	cl_dir=${TEMP_DIR}/${cl_dir,,}-rv
 	[ -d "$cl_dir" ] || mkdir "$cl_dir"
-<<<<<<< HEAD
-=======
-
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	for src_ver in "$cli_src CLI $cli_ver revanced-cli" "$patches_src Patches $patches_ver patches"; do
 		set -- $src_ver
 		local src=$1 tag=$2 ver=${3-} fprefix=$4
 		local ext
-<<<<<<< HEAD
-=======
-
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		if [ "$tag" = "CLI" ]; then
 			ext="jar"
 			local grab_cl=false
 		elif [ "$tag" = "Patches" ]; then
-<<<<<<< HEAD
-			ext="rvp"
-			local grab_cl=true
-		else abort unreachable; fi
-=======
 			ext=$PATCH_EXT
 			local grab_cl=true
 		else abort unreachable; fi
 
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		local dir=${src%/*}
 		dir=${TEMP_DIR}/${dir,,}-rv
 		[ -d "$dir" ] || mkdir "$dir"
@@ -113,24 +88,16 @@ get_prebuilts() {
 			local resp asset name
 			resp=$(gh_req "$rv_rel" -) || return 1
 			tag_name=$(jq -r '.tag_name' <<<"$resp")
-<<<<<<< HEAD
-			asset=$(jq -e -r ".assets[] | select(.name | endswith(\"$ext\"))" <<<"$resp") || return 1
-=======
 			matches=$(jq -e ".assets | map(select(.name | endswith(\"$ext\")))" <<<"$resp")
 			if [ "$(jq 'length' <<<"$matches")" -ne 1 ]; then
 				epr "More than 1 asset was found for this cli release. Fallbacking to the first one found..."
 			fi
 			asset=$(jq -r ".[0]" <<<"$matches")
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 			url=$(jq -r .url <<<"$asset")
 			name=$(jq -r .name <<<"$asset")
 			file="${dir}/${name}"
 			gh_dl "$file" "$url" >&2 || return 1
-<<<<<<< HEAD
 			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
-=======
-			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		else
 			grab_cl=false
 			local for_err=$file
@@ -142,8 +109,11 @@ get_prebuilts() {
 			tag_name=$(cut -d'-' -f3- <<<"$name")
 			tag_name=v${tag_name%.*}
 		fi
-<<<<<<< HEAD
-		if [ "$tag" = "Patches" ]; then
+
+		if [ "$tag" = "CLI" ]; then
+			PATCH_EXT=$(java -jar "$file" -h | grep -oP -m1 '\w+(?= files)' | tr '[:upper:]' '[:lower:]')
+			if [ -z "$PATCH_EXT" ]; then abort "Unable to detect patch extension from CLI help output."; fi
+		elif [ "$tag" = "Patches" ]; then
 			# Initial changelog structure
 			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -154,19 +124,6 @@ get_prebuilts() {
 			# fi
 
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
-				if ! (
-					mkdir -p "${file}-zip" || return 1
-					unzip -qo "${file}" -d "${file}-zip" || return 1
-					java -cp "${BIN_DIR}/paccer.jar:${BIN_DIR}/dexlib2.jar" com.jhc.Main "${file}-zip/extensions/shared.rve" "${file}-zip/extensions/shared-patched.rve" || return 1
-					mv -f "${file}-zip/extensions/shared-patched.rve" "${file}-zip/extensions/shared.rve" || return 1
-=======
-
-		if [ "$tag" = "CLI" ]; then
-			PATCH_EXT=$(java -jar "$file" -h | grep -oP -m1 '\w+(?= files)' | tr '[:upper:]' '[:lower:]')
-			if [ -z "$PATCH_EXT" ]; then abort "Unable to detect patch extension from CLI help output."; fi
-		elif [ "$tag" = "Patches" ]; then
-			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
-			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				# Dynamically calculate inner extension (rvp->rve, mpp->mpe)
 				local inner_ext="${ext%p}e"
 				if ! (
@@ -174,7 +131,6 @@ get_prebuilts() {
 					unzip -qo "${file}" -d "${file}-zip" || return 1
 					java -cp "${BIN_DIR}/paccer.jar:${BIN_DIR}/dexlib2.jar" com.jhc.Main "${file}-zip/extensions/shared.${inner_ext}" "${file}-zip/extensions/shared-patched.${inner_ext}" || return 1
 					mv -f "${file}-zip/extensions/shared-patched.${inner_ext}" "${file}-zip/extensions/shared.${inner_ext}" || return 1
->>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 					rm "${file}" || return 1
 					cd "${file}-zip" || abort
 					zip -0rq "${CWD}/${file}" . || return 1
