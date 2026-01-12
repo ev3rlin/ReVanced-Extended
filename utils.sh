@@ -5,6 +5,10 @@ CWD=$(pwd)
 TEMP_DIR="temp"
 BIN_DIR="bin"
 BUILD_DIR="build"
+<<<<<<< HEAD
+=======
+PATCH_EXT=""
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 
 if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
 NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
@@ -38,30 +42,53 @@ toml_get() {
 pr() { echo -e "\033[0;32m[+] ${1}\033[0m"; }
 epr() {
 	echo >&2 -e "\033[0;31m[-] ${1}\033[0m"
+<<<<<<< HEAD
 	if [ "${GITHUB_REPOSITORY-}" ]; then echo -e "::error::utils.sh [-] ${1}\n"; fi
+=======
+	if [ "${GITHUB_REPOSITORY-}" ]; then echo >&2 -e "::error::utils.sh [-] ${1}\n"; fi
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 }
 abort() {
 	epr "ABORT: ${1-}"
 	exit 1
 }
 
+<<<<<<< HEAD
 get_rv_prebuilts() {
+=======
+get_prebuilts() {
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	local cli_src=$1 cli_ver=$2 patches_src=$3 patches_ver=$4
 	pr "Getting prebuilts (${patches_src%/*})" >&2
 	local cl_dir=${patches_src%/*}
 	cl_dir=${TEMP_DIR}/${cl_dir,,}-rv
 	[ -d "$cl_dir" ] || mkdir "$cl_dir"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	for src_ver in "$cli_src CLI $cli_ver revanced-cli" "$patches_src Patches $patches_ver patches"; do
 		set -- $src_ver
 		local src=$1 tag=$2 ver=${3-} fprefix=$4
 		local ext
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		if [ "$tag" = "CLI" ]; then
 			ext="jar"
 			local grab_cl=false
 		elif [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			ext="rvp"
 			local grab_cl=true
 		else abort unreachable; fi
+=======
+			ext=$PATCH_EXT
+			local grab_cl=true
+		else abort unreachable; fi
+
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		local dir=${src%/*}
 		dir=${TEMP_DIR}/${dir,,}-rv
 		[ -d "$dir" ] || mkdir "$dir"
@@ -86,12 +113,24 @@ get_rv_prebuilts() {
 			local resp asset name
 			resp=$(gh_req "$rv_rel" -) || return 1
 			tag_name=$(jq -r '.tag_name' <<<"$resp")
+<<<<<<< HEAD
 			asset=$(jq -e -r ".assets[] | select(.name | endswith(\"$ext\"))" <<<"$resp") || return 1
+=======
+			matches=$(jq -e ".assets | map(select(.name | endswith(\"$ext\")))" <<<"$resp")
+			if [ "$(jq 'length' <<<"$matches")" -ne 1 ]; then
+				epr "More than 1 asset was found for this cli release. Fallbacking to the first one found..."
+			fi
+			asset=$(jq -r ".[0]" <<<"$matches")
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 			url=$(jq -r .url <<<"$asset")
 			name=$(jq -r .name <<<"$asset")
 			file="${dir}/${name}"
 			gh_dl "$file" "$url" >&2 || return 1
+<<<<<<< HEAD
 			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+=======
+			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		else
 			grab_cl=false
 			local for_err=$file
@@ -103,6 +142,7 @@ get_rv_prebuilts() {
 			tag_name=$(cut -d'-' -f3- <<<"$name")
 			tag_name=v${tag_name%.*}
 		fi
+<<<<<<< HEAD
 		if [ "$tag" = "Patches" ]; then
 			# Initial changelog structure
 			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
@@ -119,6 +159,22 @@ get_rv_prebuilts() {
 					unzip -qo "${file}" -d "${file}-zip" || return 1
 					java -cp "${BIN_DIR}/paccer.jar:${BIN_DIR}/dexlib2.jar" com.jhc.Main "${file}-zip/extensions/shared.rve" "${file}-zip/extensions/shared-patched.rve" || return 1
 					mv -f "${file}-zip/extensions/shared-patched.rve" "${file}-zip/extensions/shared.rve" || return 1
+=======
+
+		if [ "$tag" = "CLI" ]; then
+			PATCH_EXT=$(java -jar "$file" -h | grep -oP -m1 '\w+(?= files)' | tr '[:upper:]' '[:lower:]')
+			if [ -z "$PATCH_EXT" ]; then abort "Unable to detect patch extension from CLI help output."; fi
+		elif [ "$tag" = "Patches" ]; then
+			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
+				# Dynamically calculate inner extension (rvp->rve, mpp->mpe)
+				local inner_ext="${ext%p}e"
+				if ! (
+					mkdir -p "${file}-zip" || return 1
+					unzip -qo "${file}" -d "${file}-zip" || return 1
+					java -cp "${BIN_DIR}/paccer.jar:${BIN_DIR}/dexlib2.jar" com.jhc.Main "${file}-zip/extensions/shared.${inner_ext}" "${file}-zip/extensions/shared-patched.${inner_ext}" || return 1
+					mv -f "${file}-zip/extensions/shared-patched.${inner_ext}" "${file}-zip/extensions/shared.${inner_ext}" || return 1
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 					rm "${file}" || return 1
 					cd "${file}-zip" || abort
 					zip -0rq "${CWD}/${file}" . || return 1
@@ -143,6 +199,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 get_latest_app_version() {
     local src=$1 app=$2
     local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
@@ -190,6 +247,8 @@ auto_update_app_versions() {
     [ "$updated" = true ]
 }
 
+=======
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -215,11 +274,19 @@ config_update() {
 			else
 				last_patches=$(gh_req "$rv_rel/tags/${ver}" -)
 			fi
+<<<<<<< HEAD
 			if ! last_patches=$(jq -e -r '.assets[] | select(.name | endswith("rvp")) | .name' <<<"$last_patches"); then
 				abort oops
 			fi
 			if [ "$last_patches" ]; then
 				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md 2>/dev/null | grep "$last_patches"); then
+=======
+			if ! last_patches=$(jq -e -r ".assets[] | select(.name | endswith(\"$PATCH_EXT\")) | .name" <<<"$last_patches"); then
+				abort oops
+			fi
+			if [ "$last_patches" ]; then
+				if ! OP=$(grep "^Patches: ${PATCHES_SRC%%/*}/" build.md | grep "$last_patches"); then
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 					sources["$PATCHES_SRC/$PATCHES_VER"]=1
 					prcfg=true
 					upped+=("$table_name")
@@ -304,6 +371,7 @@ get_patch_last_supported_ver() {
 			return
 		fi
 	fi
+<<<<<<< HEAD
 	if ! op=$(java -jar "$rv_cli_jar" list-versions "$rv_patches_jar" -f "$pkg_name" 2>&1 | tail -n +3 | awk '{$1=$1}1'); then
 		epr "list-versions: '$op'"
 		return 1
@@ -311,6 +379,15 @@ get_patch_last_supported_ver() {
 	if [ "$op" = "Any" ]; then return; fi
 	pcount=$(head -1 <<<"$op") pcount=${pcount#*(} pcount=${pcount% *}
 	if [ -z "$pcount" ]; then abort "unreachable: '$pcount'"; fi
+=======
+	op=$(java -jar "$cli_jar" list-versions "$patches_jar" -f "$pkg_name" 2>&1 | tail -n +3 | awk '{$1=$1}1')
+	if [ "$op" = "Any" ]; then return; fi
+	pcount=$(head -1 <<<"$op") pcount=${pcount#*(} pcount=${pcount% *}
+	if [ -z "$pcount" ]; then
+		av_apps=$(java -jar "$cli_jar" list-versions "$patches_jar" 2>&1 | awk '/Package name:/ { printf "%s\x27%s\x27", sep, $NF; sep=", " } END { print "" }')
+		abort "No patch versions found for '$pkg_name' in this patches source!\nAvailable applications found: $av_apps";
+	fi
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	grep -F "($pcount patch" <<<"$op" | sed 's/ (.* patch.*//' | get_highest_ver || return 1
 }
 
@@ -436,14 +513,23 @@ dl_uptodown() {
 	local apparch
 	if [ "$arch" = "arm-v7a" ]; then arch="armeabi-v7a"; fi
 	if [ "$arch" = all ]; then
+<<<<<<< HEAD
 		apparch=('arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a')
 	else apparch=("$arch" 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a'); fi
+=======
+		apparch=('arm64-v8a, armeabi-v7a, x86_64' 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a')
+	else apparch=("$arch" 'arm64-v8a, armeabi-v7a, x86_64' 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a'); fi
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 
 	local op resp data_code
 	data_code=$($HTMLQ "#detail-app-name" --attribute data-code <<<"$__UPTODOWN_RESP__")
 	local versionURL=""
 	local is_bundle=false
+<<<<<<< HEAD
 	for i in {1..5}; do
+=======
+	for i in {1..20}; do
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		resp=$(req "${uptodown_dlurl}/apps/${data_code}/versions/${i}" -)
 		if ! op=$(jq -e -r ".data | map(select(.version == \"${version}\")) | .[0]" <<<"$resp"); then
 			continue
@@ -463,6 +549,11 @@ dl_uptodown() {
 			node_arch=$($HTMLQ ".content > p:nth-child($n)" --text <<<"$files" | xargs) || return 1
 			if [ -z "$node_arch" ]; then return 1; fi
 			if ! isoneof "$node_arch" "${apparch[@]}"; then continue; fi
+<<<<<<< HEAD
+=======
+			file_type=$($HTMLQ -w -t "div.variant:nth-child($((n + 1))) > .v-file > span" <<<"$files") || return 1
+			if [ "$file_type" = "xapk" ]; then is_bundle=true; else is_bundle=false; fi
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 			data_file_id=$($HTMLQ "div.variant:nth-child($((n + 1))) > .v-report" --attribute data-file-id <<<"$files") || return 1
 			resp=$(req "${uptodown_dlurl}/download/${data_file_id}-x" -)
 			break
@@ -497,12 +588,17 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 # --------------------------------------------------
 
 patch_apk() {
+<<<<<<< HEAD
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 rv_cli_jar=$4 rv_patches_jar=$5
 
 	# TODO
 	# Probably add \" \" to both $stock_input and $patched_apk if braces in rv-brand are an issue
 
 	local cmd="env -u GITHUB_REPOSITORY java -jar $rv_cli_jar patch $stock_input --purge -o $patched_apk -p $rv_patches_jar --keystore=ks.keystore \
+=======
+	local stock_input=$1 patched_apk=$2 patcher_args=$3 cli_jar=$4 patches_jar=$5
+	local cmd="env -u GITHUB_REPOSITORY java -jar $cli_jar patch $stock_input --purge -o $patched_apk -p $patches_jar --keystore=ks.keystore \
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 --keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
 	if [ "$OS" = Android ]; then cmd+=" --custom-aapt2-binary=${AAPT2}"; fi
 	pr "$cmd"
@@ -556,7 +652,11 @@ build_rv() {
 		return 0
 	fi
 	local list_patches
+<<<<<<< HEAD
 	list_patches=$(java -jar "$rv_cli_jar" list-patches "$rv_patches_jar" -f "$pkg_name" -v -p 2>&1)
+=======
+	list_patches=$(java -jar "$cli_jar" list-patches "$patches_jar" -f "$pkg_name" -v -p 2>&1)
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 
 	local get_latest_ver=false
 	if [ "$version_mode" = auto ]; then
@@ -680,11 +780,19 @@ build_rv() {
 
 		module_config "$base_template" "$pkg_name" "$version" "$arch"
 
+<<<<<<< HEAD
 		local rv_patches_ver="${rv_patches_jar##*-}"
 		module_prop \
 			"${args[module_prop_name]}" \
 			"${app_name} ${args[rv_brand]}" \
 			"${version} (patches ${rv_patches_ver%%.rvp})" \
+=======
+		local patches_ver="${patches_jar##*-}"
+		module_prop \
+			"${args[module_prop_name]}" \
+			"${app_name} ${args[rv_brand]}" \
+			"${version} (patches ${patches_ver%%.$PATCH_EXT})" \
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 			"${app_name} ${args[rv_brand]} Magisk module" \
 			"https://raw.githubusercontent.com/${GITHUB_REPOSITORY-}/update/${upj}" \
 			"$base_template"
@@ -719,7 +827,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MAGISK_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
