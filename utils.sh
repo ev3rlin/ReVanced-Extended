@@ -52,10 +52,18 @@ get_prebuilts() {
 	local cl_dir=${patches_src%/*}
 	cl_dir=${TEMP_DIR}/${cl_dir,,}-rv
 	[ -d "$cl_dir" ] || mkdir "$cl_dir"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	for src_ver in "$cli_src CLI $cli_ver revanced-cli" "$patches_src Patches $patches_ver patches"; do
 		set -- $src_ver
 		local src=$1 tag=$2 ver=${3-} fprefix=$4
 		local ext
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		if [ "$tag" = "CLI" ]; then
 			ext="jar"
 			local grab_cl=false
@@ -97,7 +105,11 @@ get_prebuilts() {
 			name=$(jq -r .name <<<"$asset")
 			file="${dir}/${name}"
 			gh_dl "$file" "$url" >&2 || return 1
+<<<<<<< HEAD
 			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+=======
+			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 		else
 			grab_cl=false
 			local for_err=$file
@@ -114,6 +126,7 @@ get_prebuilts() {
 			PATCH_EXT=$(java -jar "$file" -h | grep -oP -m1 '\w+(?= files)' | tr '[:upper:]' '[:lower:]')
 			if [ -z "$PATCH_EXT" ]; then abort "Unable to detect patch extension from CLI help output."; fi
 		elif [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			# Initial changelog structure
 			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -123,6 +136,9 @@ get_prebuilts() {
     		# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
 			# fi
 
+=======
+			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				# Dynamically calculate inner extension (rvp->rve, mpp->mpe)
 				local inner_ext="${ext%p}e"
@@ -155,6 +171,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 get_latest_app_version() {
     local src=$1 app=$2
     local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
@@ -202,6 +219,8 @@ auto_update_app_versions() {
     [ "$updated" = true ]
 }
 
+=======
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -512,10 +531,13 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 
 patch_apk() {
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 cli_jar=$4 patches_jar=$5
+<<<<<<< HEAD
 
 	# TODO
 	# Probably add \" \" to both $stock_input and $patched_apk if braces in rv-brand are an issue
 
+=======
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 	local cmd="env -u GITHUB_REPOSITORY java -jar $cli_jar patch $stock_input --purge -o $patched_apk -p $patches_jar --keystore=ks.keystore \
 --keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
 	if [ "$OS" = Android ]; then cmd+=" --custom-aapt2-binary=${AAPT2}"; fi
@@ -733,7 +755,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> 2f14d6a982fad3538b18e767631a239eef9123b4
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MAGISK_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
