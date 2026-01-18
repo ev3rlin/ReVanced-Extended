@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Sync with upstream
         uses: AndreasAugustin/actions-template-sync@v2
@@ -28,5 +29,5 @@ jobs:
           pr_branch_name_prefix: chore-upstream-sync
           pr_title: "chore: sync with upstream"
           pr_labels: upstream-sync,automated
-          git_remote_pull_params: '--allow-unrelated-histories --no-rebase'
+          git_remote_pull_params: '--no-rebase'
           template_sync_ignore_file_path: .templatesyncignore
