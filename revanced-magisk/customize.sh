@@ -171,10 +171,20 @@ if ! op=$(mm mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1); then
 fi
 am force-stop "$PKG_NAME"
 ui_print "* Optimizing $PKG_NAME"
+<<<<<<< HEAD
 nohup cmd package compile --reset "$PKG_NAME" >/dev/null 2>&1 &
+=======
+
+cmd package compile -m speed-profile -f "$PKG_NAME"
+# nohup cmd package compile -m speed-profile -f "$PKG_NAME" >/dev/null 2>&1
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 
 rm -rf "${MODPATH:?}/bin" "$MODPATH/$PKG_NAME.apk"
 
 ui_print "* Done"
+<<<<<<< HEAD
 ui_print "  by ev3rlin (https://github.com/ev3rlin)"
+=======
+ui_print "  by j-hc (github.com/j-hc)"
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 ui_print " "

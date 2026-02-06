@@ -52,10 +52,18 @@ get_prebuilts() {
 	local cl_dir=${patches_src%/*}
 	cl_dir=${TEMP_DIR}/${cl_dir,,}-rv
 	[ -d "$cl_dir" ] || mkdir "$cl_dir"
+<<<<<<< HEAD
+=======
+
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 	for src_ver in "$cli_src CLI $cli_ver revanced-cli" "$patches_src Patches $patches_ver patches"; do
 		set -- $src_ver
 		local src=$1 tag=$2 ver=${3-} fprefix=$4
 		local ext
+<<<<<<< HEAD
+=======
+
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 		if [ "$tag" = "CLI" ]; then
 			ext="jar"
 			local grab_cl=false
@@ -97,7 +105,11 @@ get_prebuilts() {
 			name=$(jq -r .name <<<"$asset")
 			file="${dir}/${name}"
 			gh_dl "$file" "$url" >&2 || return 1
+<<<<<<< HEAD
 			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+=======
+			echo "$tag: $(cut -d/ -f1 <<<"$src")/${name}  " >>"${cl_dir}/changelog.md"
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 		else
 			grab_cl=false
 			local for_err=$file
@@ -114,6 +126,7 @@ get_prebuilts() {
 			PATCH_EXT=$(java -jar "$file" -h | grep -oP -m1 '\w+(?= files)' | tr '[:upper:]' '[:lower:]')
 			if [ -z "$PATCH_EXT" ]; then abort "Unable to detect patch extension from CLI help output."; fi
 		elif [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			# Initial changelog structure
 			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -123,6 +136,9 @@ get_prebuilts() {
     		# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
 			# fi
 
+=======
+			if [ $grab_cl = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				# Dynamically calculate inner extension (rvp->rve, mpp->mpe)
 				local inner_ext="${ext%p}e"
@@ -155,6 +171,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 get_latest_app_version() {
     local src=$1 app=$2
     local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
@@ -202,6 +219,8 @@ auto_update_app_versions() {
     [ "$updated" = true ]
 }
 
+=======
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -321,7 +340,11 @@ get_patch_last_supported_ver() {
 	pcount=$(head -1 <<<"$op") pcount=${pcount#*(} pcount=${pcount% *}
 	if [ -z "$pcount" ]; then
 		av_apps=$(java -jar "$cli_jar" list-versions "$patches_jar" 2>&1 | awk '/Package name:/ { printf "%s\x27%s\x27", sep, $NF; sep=", " } END { print "" }')
+<<<<<<< HEAD
 		abort "No patch versions found for '$pkg_name' in this patches source!\nAvailable applications found: $av_apps";
+=======
+		abort "No patch versions found for '$pkg_name' in this patches source!\nAvailable applications found: $av_apps"
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 	fi
 	grep -F "($pcount patch" <<<"$op" | sed 's/ (.* patch.*//' | get_highest_ver || return 1
 }
@@ -512,6 +535,7 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 
 patch_apk() {
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 cli_jar=$4 patches_jar=$5
+<<<<<<< HEAD
 
 	# TODO
 	# Probably add \" \" to both $stock_input and $patched_apk if braces in rv-brand are an issue
@@ -519,6 +543,11 @@ patch_apk() {
 	local cmd="env -u GITHUB_REPOSITORY java -jar $cli_jar patch $stock_input --purge -o $patched_apk -p $patches_jar --keystore=ks.keystore \
 --keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
 	if [ "$OS" = Android ]; then cmd+=" --custom-aapt2-binary=${AAPT2}"; fi
+=======
+	local cmd="env -u GITHUB_REPOSITORY java -jar '$cli_jar' patch '$stock_input' --purge -o '$patched_apk' -p '$patches_jar' --keystore=ks.keystore \
+--keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
+	if [ "$OS" = Android ]; then cmd+=" --custom-aapt2-binary='${AAPT2}'"; fi
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 	pr "$cmd"
 	if eval "$cmd"; then [ -f "$patched_apk" ]; else
 		rm "$patched_apk" 2>/dev/null || :
@@ -633,10 +662,17 @@ build_rv() {
 		p_patcher_args=("${p_patcher_args[@]//-[ei] ${microg_patch}/}")
 	fi
 
+<<<<<<< HEAD
 	local spoof_client_patch
 	spoof_client_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "Spoof Client" || :) spoof_client_patch=${spoof_client_patch#*: }
 	local spoof_video_patch
 	spoof_video_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "Spoof Video" || :) spoof_video_patch=${spoof_video_patch#*: }
+=======
+	# local spoof_client_patch
+	# spoof_client_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "Spoof Client" || :) spoof_client_patch=${spoof_client_patch#*: }
+	# local spoof_video_patch
+	# spoof_video_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "Spoof Video" || :) spoof_video_patch=${spoof_video_patch#*: }
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 
 	local patcher_args patched_apk build_mode
 	local rv_brand_f=${args[rv_brand],,}
@@ -657,12 +693,21 @@ build_rv() {
 				patcher_args+=("-d \"${microg_patch}\"")
 			fi
 		fi
+<<<<<<< HEAD
 		if [ -n "$spoof_client_patch" ] && [[ ! ${p_patcher_args[*]} =~ $spoof_client_patch ]] && [ "$build_mode" = module ]; then
 			patcher_args+=("-d \"${spoof_client_patch}\"")
 		fi
 		if [ -n "$spoof_video_patch" ] && [[ ! ${p_patcher_args[*]} =~ $spoof_video_patch ]] && [ "$build_mode" = module ]; then
 			patcher_args+=("-d \"${spoof_video_patch}\"")
 		fi
+=======
+		# if [ -n "$spoof_client_patch" ] && [[ ! ${p_patcher_args[*]} =~ $spoof_client_patch ]] && [ "$build_mode" = module ]; then
+		# 	patcher_args+=("-d \"${spoof_client_patch}\"")
+		# fi
+		# if [ -n "$spoof_video_patch" ] && [[ ! ${p_patcher_args[*]} =~ $spoof_video_patch ]] && [ "$build_mode" = module ]; then
+		# 	patcher_args+=("-d \"${spoof_video_patch}\"")
+		# fi
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 		if [ "${args[riplib]}" = true ]; then
 			patcher_args+=("--rip-lib x86_64 --rip-lib x86")
 			if [ "$build_mode" = module ]; then
@@ -733,7 +778,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> eb326615a7bd40e995f993d50d41dff03ee2d321
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MAGISK_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
