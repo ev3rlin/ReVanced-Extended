@@ -28,7 +28,11 @@ run() {
 		err "mount failed (ROM issue)"
 		return
 	fi
+<<<<<<< HEAD
 	VERSION=$(dumpsys package "$PKG_NAME" | grep -m1 versionName) VERSION="${VERSION#*=}"
+=======
+	VERSION=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 versionName) VERSION="${VERSION#*=}"
+>>>>>>> a7f5f4f6ba7ce9fad83bbc4e52e8a0820c355c24
 	if [ "$VERSION" != "$PKG_VER" ] && [ "$VERSION" ]; then
 		err "version mismatch (installed:${VERSION}, module:$PKG_VER)"
 		return
