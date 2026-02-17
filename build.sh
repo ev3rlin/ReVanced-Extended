@@ -30,7 +30,11 @@ REMOVE_RV_INTEGRATIONS_CHECKS=$(toml_get "$main_config_t" remove-rv-integrations
 DEF_PATCHES_VER=$(toml_get "$main_config_t" patches-version) || DEF_PATCHES_VER="latest"
 DEF_CLI_VER=$(toml_get "$main_config_t" cli-version) || DEF_CLI_VER="latest"
 DEF_PATCHES_SRC=$(toml_get "$main_config_t" patches-source) || DEF_PATCHES_SRC="ReVanced/revanced-patches"
+<<<<<<< HEAD
 DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="j-hc/revanced-cli"
+=======
+DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="ReVanced/revanced-cli"
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 DEF_RV_BRAND=$(toml_get "$main_config_t" rv-brand) || DEF_RV_BRAND="ReVanced"
 DEF_DPI_LIST=$(toml_get "$main_config_t" dpi) || DEF_DPI_LIST="nodpi anydpi"
 mkdir -p "$TEMP_DIR" "$BUILD_DIR"
@@ -43,7 +47,11 @@ fi
 : >build.md
 ENABLE_MAGISK_UPDATE=$(toml_get "$main_config_t" enable-magisk-update) || ENABLE_MAGISK_UPDATE=true
 if [ "$ENABLE_MAGISK_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
+<<<<<<< HEAD
 	pr "You are building locally. Magisk updates will not be enabled."
+=======
+	pr "You are building locally. Module updates will not be enabled."
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 	ENABLE_MAGISK_UPDATE=false
 fi
 if ((COMPRESSION_LEVEL > 9)) || ((COMPRESSION_LEVEL < 0)); then abort "compression-level must be within 0-9"; fi
@@ -59,7 +67,10 @@ gh_dl "${MODULE_TEMPLATE_DIR}/bin/arm/cmpr" "https://github.com/j-hc/cmpr/releas
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x86/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86"
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x64/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86_64"
 
+<<<<<<< HEAD
 declare -A cliriplib
+=======
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 idx=0
 for table_name in $(toml_get_table_names); do
 	if [ -z "$table_name" ]; then continue; fi
@@ -84,6 +95,7 @@ for table_name in $(toml_get_table_names); do
 	read -r cli_jar patches_jar <<<"$PREBUILTS"
 	app_args[cli]=$cli_jar
 	app_args[ptjar]=$patches_jar
+<<<<<<< HEAD
 	if [[ -v cliriplib[${app_args[cli]}] ]]; then app_args[riplib]=${cliriplib[${app_args[cli]}]}; else
 		if [[ $(java -jar "${app_args[cli]}" patch 2>&1) == *rip-lib* ]]; then
 			cliriplib[${app_args[cli]}]=true
@@ -94,6 +106,8 @@ for table_name in $(toml_get_table_names); do
 		fi
 	fi
 	if [ "${app_args[riplib]}" = "true" ] && [ "$(toml_get "$t" riplib)" = "false" ]; then app_args[riplib]=false; fi
+=======
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 	app_args[rv_brand]=$(toml_get "$t" rv-brand) || app_args[rv_brand]=$DEF_RV_BRAND
 
 	app_args[excluded_patches]=$(toml_get "$t" excluded-patches) || app_args[excluded_patches]=""
@@ -166,6 +180,7 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+<<<<<<< HEAD
 # Initial changelog logic
 # log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
@@ -173,6 +188,12 @@ if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 # log "$(cat "$TEMP_DIR"/*/changelog.md)"
 
 log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
+=======
+log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
+log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store"
+log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
+log "$(cat "$TEMP_DIR"/*/changelog.md)"
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -180,6 +201,7 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
+<<<<<<< HEAD
 # New skipped changelog logic with links
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
@@ -196,4 +218,6 @@ fi
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
 
+=======
+>>>>>>> b085605af94516ff95bc3453a2e17d649488c0d8
 pr "Done"
