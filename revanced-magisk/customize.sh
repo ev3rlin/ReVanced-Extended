@@ -53,7 +53,11 @@ if BASEPATH=$(pmex path "$PKG_NAME"); then
 		IS_SYS=true
 	elif [ ! -f "$MODPATH/$PKG_NAME.apk" ]; then
 		ui_print "* Stock $PKG_NAME APK was not found"
+<<<<<<< HEAD
 		VERSION=$(dumpsys package "$PKG_NAME" | grep -m1 versionName) VERSION="${VERSION#*=}"
+=======
+		VERSION=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 versionName) VERSION="${VERSION#*=}"
+>>>>>>> 505d4e48b84f345f260f998a11aaca541aee432d
 		if [ "$VERSION" = "$PKG_VER" ] || [ -z "$VERSION" ]; then
 			ui_print "* Skipping stock installation"
 			INS=false
@@ -171,10 +175,37 @@ if ! op=$(mm mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1); then
 fi
 am force-stop "$PKG_NAME"
 ui_print "* Optimizing $PKG_NAME"
+<<<<<<< HEAD
 nohup cmd package compile --reset "$PKG_NAME" >/dev/null 2>&1 &
+=======
+
+cmd package compile -m speed-profile -f "$PKG_NAME"
+# nohup cmd package compile -m speed-profile -f "$PKG_NAME" >/dev/null 2>&1
+
+if [ "$KSU" ]; then
+	UID=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 uid)
+	UID=${UID#*=} UID=${UID%% *}
+	if [ -z "$UID" ]; then
+		UID=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 userId)
+		UID=${UID#*=} UID=${UID%% *}
+	fi
+	if [ "$UID" ]; then
+		if ! OP=$("${MODPATH:?}/bin/$ARCH/ksu_profile" "$UID" "$PKG_NAME" 2>&1); then
+			ui_print "ERROR ksu_profile: $OP"
+		fi
+	else
+		ui_print "ERROR: UID could not be found for $PKG_NAME"
+		dumpsys package "$PKG_NAME" >&2
+	fi
+fi
+>>>>>>> 505d4e48b84f345f260f998a11aaca541aee432d
 
 rm -rf "${MODPATH:?}/bin" "$MODPATH/$PKG_NAME.apk"
 
 ui_print "* Done"
+<<<<<<< HEAD
 ui_print "  by ev3rlin (https://github.com/ev3rlin)"
+=======
+ui_print "  by j-hc (github.com/j-hc)"
+>>>>>>> 505d4e48b84f345f260f998a11aaca541aee432d
 ui_print " "
