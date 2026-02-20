@@ -30,7 +30,11 @@ REMOVE_RV_INTEGRATIONS_CHECKS=$(toml_get "$main_config_t" remove-rv-integrations
 DEF_PATCHES_VER=$(toml_get "$main_config_t" patches-version) || DEF_PATCHES_VER="latest"
 DEF_CLI_VER=$(toml_get "$main_config_t" cli-version) || DEF_CLI_VER="latest"
 DEF_PATCHES_SRC=$(toml_get "$main_config_t" patches-source) || DEF_PATCHES_SRC="ReVanced/revanced-patches"
+<<<<<<< HEAD
 DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="j-hc/revanced-cli"
+=======
+DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="ReVanced/revanced-cli"
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 DEF_RV_BRAND=$(toml_get "$main_config_t" rv-brand) || DEF_RV_BRAND="ReVanced"
 DEF_DPI_LIST=$(toml_get "$main_config_t" dpi) || DEF_DPI_LIST="nodpi anydpi"
 mkdir -p "$TEMP_DIR" "$BUILD_DIR"
@@ -41,6 +45,7 @@ if [ "${2-}" = "--config-update" ]; then
 fi
 
 : >build.md
+<<<<<<< HEAD
 ENABLE_MAGISK_UPDATE=$(toml_get "$main_config_t" enable-magisk-update) || ENABLE_MAGISK_UPDATE=true
 if [ "$ENABLE_MAGISK_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
 	pr "You are building locally. Magisk updates will not be enabled."
@@ -51,6 +56,18 @@ if ((COMPRESSION_LEVEL > 9)) || ((COMPRESSION_LEVEL < 0)); then abort "compressi
 rm -rf revanced-magisk/bin/*/tmp.*
 for file in "$TEMP_DIR"/*/changelog.md; do
     [ -f "$file" ] && : > "$file"
+=======
+ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
+if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
+	pr "You are building locally. Module updates will not be enabled."
+	ENABLE_MODULE_UPDATE=false
+fi
+if ((COMPRESSION_LEVEL > 9)) || ((COMPRESSION_LEVEL < 0)); then abort "compression-level must be within 0-9"; fi
+
+rm -rf module/bin/*/tmp.*
+for file in "$TEMP_DIR"/*/changelog.md; do
+	[ -f "$file" ] && : >"$file"
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 done
 
 mkdir -p ${MODULE_TEMPLATE_DIR}/bin/arm64 ${MODULE_TEMPLATE_DIR}/bin/arm ${MODULE_TEMPLATE_DIR}/bin/x86 ${MODULE_TEMPLATE_DIR}/bin/x64
@@ -59,7 +76,10 @@ gh_dl "${MODULE_TEMPLATE_DIR}/bin/arm/cmpr" "https://github.com/j-hc/cmpr/releas
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x86/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86"
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x64/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86_64"
 
+<<<<<<< HEAD
 declare -A cliriplib
+=======
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 idx=0
 for table_name in $(toml_get_table_names); do
 	if [ -z "$table_name" ]; then continue; fi
@@ -84,6 +104,7 @@ for table_name in $(toml_get_table_names); do
 	read -r cli_jar patches_jar <<<"$PREBUILTS"
 	app_args[cli]=$cli_jar
 	app_args[ptjar]=$patches_jar
+<<<<<<< HEAD
 	if [[ -v cliriplib[${app_args[cli]}] ]]; then app_args[riplib]=${cliriplib[${app_args[cli]}]}; else
 		if [[ $(java -jar "${app_args[cli]}" patch 2>&1) == *rip-lib* ]]; then
 			cliriplib[${app_args[cli]}]=true
@@ -94,6 +115,8 @@ for table_name in $(toml_get_table_names); do
 		fi
 	fi
 	if [ "${app_args[riplib]}" = "true" ] && [ "$(toml_get "$t" riplib)" = "false" ]; then app_args[riplib]=false; fi
+=======
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 	app_args[rv_brand]=$(toml_get "$t" rv-brand) || app_args[rv_brand]=$DEF_RV_BRAND
 
 	app_args[excluded_patches]=$(toml_get "$t" excluded-patches) || app_args[excluded_patches]=""
@@ -126,7 +149,11 @@ for table_name in $(toml_get_table_names); do
 	} || app_args[archive_dlurl]=""
 	if [ -z "${app_args[dl_from]-}" ]; then abort "ERROR: no 'apkmirror_dlurl', 'uptodown_dlurl' or 'archive_dlurl' option was set for '$table_name'."; fi
 	app_args[arch]=$(toml_get "$t" arch) || app_args[arch]="all"
+<<<<<<< HEAD
 	if [ "${app_args[arch]}" != "both" ] && [ "${app_args[arch]}" != "all" ] && [[ ${app_args[arch]} != "arm64-v8a"* ]] && [[ ${app_args[arch]} != "arm-v7a"* ]]; then
+=======
+	if ! isoneof "${app_args[arch]}" "both" "all" "arm64-v8a" "arm-v7a" "x86_64" "x86"; then
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 		abort "wrong arch '${app_args[arch]}' for '$table_name'"
 	fi
 
@@ -166,6 +193,7 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+<<<<<<< HEAD
 # Initial changelog logic
 # log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
@@ -173,6 +201,12 @@ if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 # log "$(cat "$TEMP_DIR"/*/changelog.md)"
 
 log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
+=======
+log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
+log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store"
+log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
+log "$(cat "$TEMP_DIR"/*/changelog.md)"
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -180,6 +214,7 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
+<<<<<<< HEAD
 # New skipped changelog logic with links
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
@@ -196,4 +231,6 @@ fi
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
 
+=======
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 pr "Done"

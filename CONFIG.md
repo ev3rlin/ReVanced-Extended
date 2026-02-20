@@ -12,8 +12,13 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 
 ## More about other options:
 
+<<<<<<< HEAD
 There exists an example below with all defaults shown and all the keys explicitly set.
 **All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.
+=======
+There exists an example below with all defaults shown and all the keys explicitly set.  
+**All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.  
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 
 ```toml
 parallel-jobs = 1                    # amount of cores to use for parallel patching, if not set $(nproc) is used
@@ -22,7 +27,11 @@ remove-rv-integrations-checks = true # remove checks from the revanced integrati
 dpi = "nodpi anydpi 120-640dpi"      # dpi packages to be searched in order. default: "nodpi anydpi"
 
 patches-source = "revanced/revanced-patches" # where to fetch patches bundle from. default: "revanced/revanced-patches"
+<<<<<<< HEAD
 cli-source = "j-hc/revanced-cli"             # where to fetch cli from. default: "j-hc/revanced-cli"
+=======
+cli-source = "ReVanced/revanced-cli"             # where to fetch cli from. default: "ReVanced/revanced-cli"
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 # options like cli-source can also set per app
 rv-brand = "ReVanced Extended" # rebrand from 'ReVanced' to something different. default: "ReVanced"
 
@@ -56,9 +65,15 @@ include-stock = true                                       # includes stock apk 
 exclusive-patches = false                                  # exclude all patches by default. default: false
 apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 uptodown-dlurl = "https://spotify.en.uptodown.com/android"
+<<<<<<< HEAD
 module-prop-name = "some-app-magisk"                       # magisk module prop name.
 dpi = "360-480dpi"                               # used to select apk variant from apkmirror. default: nodpi
 arch = "arm64-v8a"                                         # 'arm64-v8a', 'arm-v7a', 'all', 'both'. 'both' downloads both arm64-v8a and arm-v7a. default: all
 riplib = true                                              # enables ripping x86 and x86_64 libs from apks with j-hc revanced cli. default: true
 
+=======
+module-prop-name = "some-app-module"                       # module prop name.
+dpi = "360-480dpi"                                         # used to select apk variant from apkmirror. default: nodpi
+arch = "arm64-v8a"                                         # 'arm64-v8a', 'arm-v7a', 'all', 'both'. 'both' downloads both arm64-v8a and arm-v7a. default: all
+>>>>>>> 6712933177658500993ce6594364903d57e1c14f
 ```
