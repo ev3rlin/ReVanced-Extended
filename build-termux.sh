@@ -26,7 +26,11 @@ until
 do sleep 1; done
 if [ ! -f ~/.rvmm_"$(date '+%Y%m')" ]; then
 	pr "Setting up environment..."
+<<<<<<< HEAD
 	yes "" | pkg update -y && pkg upgrade -y && pkg install -y git curl jq openjdk-17 zip
+=======
+	yes "" | pkg update -y && pkg upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" && pkg install -y git curl jq openjdk-17 zip
+>>>>>>> cf6e760e217bed1d7af8a2a6cd918a49305901b5
 	: >~/.rvmm_"$(date '+%Y%m')"
 fi
 mkdir -p /sdcard/Download/revanced-magisk-module/
