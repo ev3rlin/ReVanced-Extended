@@ -12,8 +12,13 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 
 ## More about other options:
 
+<<<<<<< HEAD
 There exists an example below with all defaults shown and all the keys explicitly set.
 **All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.
+=======
+There exists an example below with all defaults shown and all the keys explicitly set.  
+**All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.  
+>>>>>>> b17cec04997c5fdd061c5280da68fc98da858597
 
 ```toml
 parallel-jobs = 1                    # amount of cores to use for parallel patching, if not set $(nproc) is used
@@ -22,7 +27,11 @@ remove-rv-integrations-checks = true # remove checks from the revanced integrati
 dpi = "nodpi anydpi 120-640dpi"      # dpi packages to be searched in order. default: "nodpi anydpi"
 
 patches-source = "revanced/revanced-patches" # where to fetch patches bundle from. default: "revanced/revanced-patches"
+<<<<<<< HEAD
 cli-source = "j-hc/revanced-cli"             # where to fetch cli from. default: "j-hc/revanced-cli"
+=======
+cli-source = "ReVanced/revanced-cli"             # where to fetch cli from. default: "ReVanced/revanced-cli"
+>>>>>>> b17cec04997c5fdd061c5280da68fc98da858597
 # options like cli-source can also set per app
 rv-brand = "ReVanced Extended" # rebrand from 'ReVanced' to something different. default: "ReVanced"
 
@@ -54,6 +63,7 @@ excluded-patches = """\
 included-patches = "'Some Patch'"                          # whitespace seperated list of non-default patches to include. default: ""
 include-stock = true                                       # includes stock apk in the module. default: true
 exclusive-patches = false                                  # exclude all patches by default. default: false
+<<<<<<< HEAD
 apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 uptodown-dlurl = "https://spotify.en.uptodown.com/android"
 module-prop-name = "some-app-magisk"                       # magisk module prop name.
@@ -61,4 +71,15 @@ dpi = "360-480dpi"                               # used to select apk variant fr
 arch = "arm64-v8a"                                         # 'arm64-v8a', 'arm-v7a', 'all', 'both'. 'both' downloads both arm64-v8a and arm-v7a. default: all
 riplib = true                                              # enables ripping x86 and x86_64 libs from apks with j-hc revanced cli. default: true
 
+=======
+
+apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
+uptodown-dlurl = "https://spotify.en.uptodown.com/android"
+# direct download url. the url must have point to an apk file with name format shown in this example
+direct-dlurl = "https://website/com.google.android.youtube-20.40.45-all.apk"
+
+module-prop-name = "some-app-module"                       # module prop name.
+dpi = "360-480dpi"                                         # used to select apk variant from apkmirror. default: nodpi
+arch = "arm64-v8a"                                         # 'arm64-v8a', 'arm-v7a', 'all', 'both'. 'both' downloads both arm64-v8a and arm-v7a. default: all
+>>>>>>> b17cec04997c5fdd061c5280da68fc98da858597
 ```
