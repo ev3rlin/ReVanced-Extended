@@ -174,10 +174,19 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 	_full_build=$(cat build.md)
 	_old_state=$(sed 's/[[:space:]]*$//' "$TEMP_DIR/old_build_state.md")
 	: >build.md
+
+	# Custom changelog (@ev3rlin changes)
+	_has_changes=false
 	while IFS= read -r line; do
 		_cl=$(sed 's/[[:space:]]*$//' <<<"$line")
 		[ -z "$_cl" ] && continue
 		if ! grep -qxF "$_cl" <<<"$_old_state"; then
+
+			# Custom changelog (@ev3rlin changes)
+			if [ "$_has_changes" = false ]; then
+				log "### Changelog"
+				_has_changes=true
+			fi
 			log "$_cl"
 		fi
 	done <<<"$_full_build"
@@ -189,7 +198,7 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
-# New skipped changelog logic with links
+# New skipped changelog logic with links (@ev3rlin changes)
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 # if [ -n "$SKIPPED" ]; then
