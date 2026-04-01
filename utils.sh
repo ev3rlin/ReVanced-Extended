@@ -126,7 +126,6 @@ get_prebuilts() {
 		fi
 
 		if [ "$tag" = "Patches" ]; then
-<<<<<<< HEAD
 			# Initial changelog structure
 			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -136,9 +135,6 @@ get_prebuilts() {
 			# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
 			# fi
 
-=======
-			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
->>>>>>> c62a54d5a04617400cd19ef33cba2dfdb5b0947f
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				local extensions_ext
 				extensions_ext=$(unzip -l "${file}" "extensions/shared.*" | grep -o "shared\..*") extensions_ext="${extensions_ext#*.}"
@@ -171,7 +167,6 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
-<<<<<<< HEAD
 get_latest_app_version() {
     local src=$1 app=$2
     local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
@@ -219,8 +214,6 @@ auto_update_app_versions() {
     [ "$updated" = true ]
 }
 
-=======
->>>>>>> c62a54d5a04617400cd19ef33cba2dfdb5b0947f
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -793,11 +786,7 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
-<<<<<<< HEAD
 author=ev3rlin
-=======
-author=j-hc
->>>>>>> c62a54d5a04617400cd19ef33cba2dfdb5b0947f
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MODULE_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
