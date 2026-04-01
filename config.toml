@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-enable-magisk-update = true # set this to false if you do not want to receive updates for the module in magisk app
-=======
 enable-module-update = true # set this to false if you do not want to receive updates for the module
->>>>>>> c62a54d5a04617400cd19ef33cba2dfdb5b0947f
 parallel-jobs = 1
 
 # add 'enabled = false' for not patching a specific app or remove it from the config
