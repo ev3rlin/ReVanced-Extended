@@ -170,7 +170,7 @@ jobs:
           APKS=""
           MODULES=""
           NOTES=""
-          MICROG_URL="https://github.com/ReVanced/GmsCore/releases"
+          MICROG_URL="https://github.com/MorpheApp/MicroG-RE"
           ZYGISK_DETACH_URL="https://github.com/j-hc/zygisk-detach"
 
           for OUTPUT in *; do
@@ -185,7 +185,7 @@ jobs:
           MODULES=${MODULES#"$NL"}
           APKS=${APKS#"$NL"}
 
-          NOTES+="${NL}ℹ️ Install [Microg](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
+          NOTES+="${NL}ℹ️ Install [MicroG-RE](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
           NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
           NOTES=${NOTES#"$NL"}
 
