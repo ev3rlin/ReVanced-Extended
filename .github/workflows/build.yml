@@ -25,6 +25,11 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - name: Load previous build state
+        run: |
+          # Load build-state.md from update branch for diff-based changelog
+          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
+
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
@@ -40,9 +45,6 @@ jobs:
 
           # Reload config after potential app version updates
           toml_prep config.toml
-
-          # Load build-state.md from update branch for diff-based changelog
-          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
 
           # Load full state for patches updates check (prefer build-state.md over build.md)
           if [ -s build-state.md ]; then
