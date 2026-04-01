@@ -41,17 +41,23 @@ jobs:
           # Reload config after potential app version updates
           toml_prep config.toml
 
-          # Load build.md from update branch if it exists (for patches updates check)
-          if git show origin/update:build.md > build.md 2>/dev/null; then
+          # Load build-state.md from update branch for diff-based changelog
+          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
+
+          # Load full state for patches updates check (prefer build-state.md over build.md)
+          if [ -s build-state.md ]; then
+            cp build-state.md build.md
+          else
+            git show origin/update:build.md > build.md 2>/dev/null || :
+          fi
+
+          if [ -s build.md ]; then
             # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
               echo "$UPDATE_CFG" > config.json
             fi
           fi
-
-          # Load build-state.md from update branch for diff-based changelog
-          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
 
       - name: Make release name and get version
         id: release_info
