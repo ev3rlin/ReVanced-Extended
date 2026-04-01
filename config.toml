@@ -1,4 +1,4 @@
-enable-magisk-update = true # set this to false if you do not want to receive updates for the module in magisk app
+enable-module-update = true # set this to false if you do not want to receive updates for the module
 parallel-jobs = 1
 
 # add 'enabled = false' for not patching a specific app or remove it from the config
@@ -7,10 +7,10 @@ parallel-jobs = 1
 # you can use rvmm-config-gen to generate a config
 
 patches-source = "anddea/revanced-patches"
-integrations-source = "anddea/revanced-integrations"
-cli-source = "inotia00/revanced-cli"
+patches-version = "latest"
 
-patches-version = "dev"
+cli-source = "MorpheApp/morphe-cli"
+cli-version = "latest"
 
 rv-brand = "ReVanced Extended"
 
