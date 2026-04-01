@@ -41,6 +41,10 @@ if [ "${2-}" = "--config-update" ]; then
 	exit 0
 fi
 
+# Save old build-state.md for diff-based changelog (full state from previous build)
+if [ -f build-state.md ] && [ -s build-state.md ]; then
+	cp build-state.md "$TEMP_DIR/old_build_state.md"
+fi
 : >build.md
 ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
 if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
@@ -161,6 +165,23 @@ if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 # log "$(cat "$TEMP_DIR"/*/changelog.md)"
 
 log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
+
+# Save full state for next build's comparison
+cp build.md build-state.md
+
+# Filter changelog to show only changes compared to previous build
+if [ -f "$TEMP_DIR/old_build_state.md" ]; then
+	_full_build=$(cat build.md)
+	_old_state=$(sed 's/[[:space:]]*$//' "$TEMP_DIR/old_build_state.md")
+	: >build.md
+	while IFS= read -r line; do
+		_cl=$(sed 's/[[:space:]]*$//' <<<"$line")
+		[ -z "$_cl" ] && continue
+		if ! grep -qxF "$_cl" <<<"$_old_state"; then
+			log "$_cl"
+		fi
+	done <<<"$_full_build"
+fi
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then

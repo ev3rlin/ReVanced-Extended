@@ -50,6 +50,9 @@ jobs:
             fi
           fi
 
+          # Load build-state.md from update branch for diff-based changelog
+          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
+
       - name: Make release name and get version
         id: release_info
         env:
@@ -106,6 +109,7 @@ jobs:
           cat build.md >> "$GITHUB_OUTPUT"
           echo "${DELIM}" >> "$GITHUB_OUTPUT"
           cp -f build.md build.tmp
+          cp -f build-state.md build-state.tmp 2>/dev/null || :
 
       - name: Upload modules to release
         uses: svenstaro/upload-release-action@v2
@@ -125,6 +129,7 @@ jobs:
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
+          cp -f build-state.tmp build-state.md 2>/dev/null || :
           get_update_json() {
             echo "{
             \"version\": \"$1\",
@@ -154,7 +159,7 @@ jobs:
         with:
           branch: update
           skip_checkout: true
-          file_pattern: build.md *-update.json
+          file_pattern: build.md build-state.md *-update.json
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram

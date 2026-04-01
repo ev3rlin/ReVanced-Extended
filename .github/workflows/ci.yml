@@ -33,9 +33,16 @@ jobs:
             SHOULD_BUILD=1
           fi
 
-          # Check if build.md exists in update branch
-          if git show origin/update:build.md > build.md 2>/dev/null; then
-            # build.md exists, check for patches updates
+          # Check if build-state.md exists in update branch (full state for patches update check)
+          if git show origin/update:build-state.md > build.md 2>/dev/null; then
+            # build-state.md exists, check for patches updates
+            UPDATE_CFG=$(./build.sh config.toml --config-update)
+            if [ "$UPDATE_CFG" ]; then
+              echo "Patches updated: $UPDATE_CFG"
+              SHOULD_BUILD=1
+            fi
+          elif git show origin/update:build.md > build.md 2>/dev/null; then
+            # Fallback to build.md for backwards compatibility
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
               echo "Patches updated: $UPDATE_CFG"
