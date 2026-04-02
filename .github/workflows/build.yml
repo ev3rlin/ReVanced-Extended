@@ -202,7 +202,7 @@ jobs:
           NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
           NOTES=${NOTES#"$NL"}
 
-          BODY="$(sed 's/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/###//g; s/^- /↪ /g; /^==/d;' ../build.md)"
+          BODY="$(sed 's/^### \(.*\)/*▼ \1*/g; s/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/^- /↪ /g; /^==/d;' ../build.md)"
           MSG="*New build!*
 
           ${BODY}
