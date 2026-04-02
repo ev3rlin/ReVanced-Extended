@@ -25,6 +25,11 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - name: Load previous build state
+        run: |
+          # Load build-state.md from update branch for diff-based changelog
+          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
+
       - name: Update config
         if: ${{ inputs.from_ci }}
         run: |
@@ -41,8 +46,14 @@ jobs:
           # Reload config after potential app version updates
           toml_prep config.toml
 
-          # Load build.md from update branch if it exists (for patches updates check)
-          if git show origin/update:build.md > build.md 2>/dev/null; then
+          # Load full state for patches updates check (prefer build-state.md over build.md)
+          if [ -s build-state.md ]; then
+            cp build-state.md build.md
+          else
+            git show origin/update:build.md > build.md 2>/dev/null || :
+          fi
+
+          if [ -s build.md ]; then
             # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
@@ -106,6 +117,7 @@ jobs:
           cat build.md >> "$GITHUB_OUTPUT"
           echo "${DELIM}" >> "$GITHUB_OUTPUT"
           cp -f build.md build.tmp
+          cp -f build-state.md build-state.tmp 2>/dev/null || :
 
       - name: Upload modules to release
         uses: svenstaro/upload-release-action@v2
@@ -125,6 +137,7 @@ jobs:
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
+          cp -f build-state.tmp build-state.md 2>/dev/null || :
           get_update_json() {
             echo "{
             \"version\": \"$1\",
@@ -154,7 +167,7 @@ jobs:
         with:
           branch: update
           skip_checkout: true
-          file_pattern: build.md *-update.json
+          file_pattern: build.md build-state.md *-update.json
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
@@ -189,7 +202,7 @@ jobs:
           NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
           NOTES=${NOTES#"$NL"}
 
-          BODY="$(sed 's/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/###//g; s/^- /↪ /g; /^==/d;' ../build.md)"
+          BODY="$(sed 's/^### \(.*\)/*▼ \1:*/g; s/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/^- /↪ /g; /^==/d;' ../build.md)"
           MSG="*New build!*
 
           ${BODY}

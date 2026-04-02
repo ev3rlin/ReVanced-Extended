@@ -127,9 +127,9 @@ get_prebuilts() {
 
 		if [ "$tag" = "Patches" ]; then
 			# Initial changelog structure
-			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+			if [ "$grab_cl" = true ]; then echo -e "[Patches Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
-			# Enhanced changelog structure with body extraction
+			# Enhanced changelog structure with body extraction (@ev3rlin changes)
 			# if [ $grab_cl = true ]; then
 			# 	local changelog_body=$(jq -r '.body // empty' <<<"$resp")
 			# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
@@ -167,6 +167,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+# (@ev3rlin changes)
 get_latest_app_version() {
     local src=$1 app=$2
     local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
@@ -174,6 +175,7 @@ get_latest_app_version() {
         | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -1
 }
 
+# (@ev3rlin changes)
 auto_update_app_versions() {
     local config_file=${1:-config.toml}
     local patches_src=${2:-$DEF_PATCHES_SRC}
