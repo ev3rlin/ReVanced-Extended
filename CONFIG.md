@@ -12,8 +12,13 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 
 ## More about other options:
 
+<<<<<<< HEAD
 There exists an example below with all defaults shown and all the keys explicitly set.
 **All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.
+=======
+There exists an example below with all defaults shown and all the keys explicitly set.  
+**All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.  
+>>>>>>> 471962a40ddcf7a088aa608eb8654dcae77cd618
 
 ```toml
 parallel-jobs = 1                    # amount of cores to use for parallel patching, if not set $(nproc) is used
