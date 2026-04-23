@@ -126,6 +126,7 @@ get_prebuilts() {
 		fi
 
 		if [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			# Initial changelog structure
 			if [ "$grab_cl" = true ]; then echo -e "[Patches Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -135,6 +136,9 @@ get_prebuilts() {
 			# 	echo -e "$changelog_body\n" >>"${cl_dir}/changelog.md"
 			# fi
 
+=======
+			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				local extensions_ext
 				extensions_ext=$(unzip -l "${file}" "extensions/shared.*" | grep -o "shared\..*") extensions_ext="${extensions_ext#*.}"
@@ -167,6 +171,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 # (@ev3rlin changes)
 get_latest_app_version() {
     local src=$1 app=$2
@@ -216,6 +221,8 @@ auto_update_app_versions() {
     [ "$updated" = true ]
 }
 
+=======
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -387,10 +394,25 @@ merge_splits() {
 # -------------------- apkmirror --------------------
 apkmirror_search() {
 	local resp="$1" dpi="$2" arch="$3" apk_bundle="$4"
+<<<<<<< HEAD
 	local apparch dlurl="" node app_table emptyCheck
 	if [ "$arch" = all ]; then
 		apparch=(universal noarch 'arm64-v8a + armeabi-v7a')
 	else apparch=("$arch" universal noarch 'arm64-v8a + armeabi-v7a'); fi
+=======
+	local dlurl="" node app_table emptyCheck
+
+	local apparch=('universal' 'noarch' 'arm64-v8a + armeabi-v7a')
+	if [ "$arch" != all ]; then
+		apparch+=("$arch")
+	fi
+
+	local appdpi=("nodpi" "anydpi")
+	if [ "$dpi" ]; then
+		appdpi+=($dpi)
+	fi
+
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 	for ((n = 1; n < 40; n++)); do
 		node=$($HTMLQ "div.table-row.headerFont:nth-last-child($n)" -r "span:nth-child(n+3)" <<<"$resp")
 		if [ -z "$node" ]; then break; fi
@@ -400,7 +422,11 @@ apkmirror_search() {
 		else break; fi
 		app_table=$($HTMLQ --text --ignore-whitespace <<<"$node")
 		if [ "$(sed -n 3p <<<"$app_table")" = "$apk_bundle" ] &&
+<<<<<<< HEAD
 			[ "$(sed -n 6p <<<"$app_table")" = "$dpi" ] &&
+=======
+			isoneof "$(sed -n 6p <<<"$app_table")" "${appdpi[@]}" &&
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 			isoneof "$(sed -n 4p <<<"$app_table")" "${apparch[@]}"; then
 			echo "$dlurl"
 			return 0
@@ -415,6 +441,7 @@ apkmirror_search() {
 }
 dl_apkmirror() {
 	local url=$1 version=${2// /-} output=$3 arch=$4 dpi=$5 is_bundle=false
+<<<<<<< HEAD
 	if [ -f "${output}.apkm" ]; then
 		is_bundle=true
 	else
@@ -441,6 +468,36 @@ dl_apkmirror() {
 		url=$(req "$url" - | $HTMLQ --base https://www.apkmirror.com --attribute href "span > a[rel = nofollow]") || return 1
 	fi
 
+=======
+
+	if [ -f "${output}.apkm" ]; then
+		merge_splits "${output}.apkm" "${output}"
+		return 0
+	fi
+
+	if [ "$arch" = "arm-v7a" ]; then arch="armeabi-v7a"; fi
+	local resp node app_table apkmname dlurl=""
+	apkmname=$($HTMLQ "h1.marginZero" --text <<<"$__APKMIRROR_RESP__")
+	apkmname="${apkmname,,}" apkmname="${apkmname// /-}" apkmname="${apkmname//[^a-z0-9-]/}"
+	url="${url}/${apkmname}-${version//./-}-release/"
+	resp=$(req "$url" -) || return 1
+	node=$($HTMLQ "div.table-row.headerFont:nth-last-child(1)" -r "span:nth-child(n+3)" <<<"$resp")
+	if [ "$node" ]; then
+		for type in APK BUNDLE; do
+			if dlurl=$(apkmirror_search "$resp" "$dpi" "$arch" "$type"); then
+				if [ "$type" = "BUNDLE" ]; then
+					is_bundle=true
+				else is_bundle=false; fi
+				break 2
+			fi
+		done
+		if [ -z "$dlurl" ]; then return 1; fi
+		resp=$(req "$dlurl" -)
+	fi
+	url=$(echo "$resp" | $HTMLQ --base https://www.apkmirror.com --attribute href "a.btn") || return 1
+	url=$(req "$url" - | $HTMLQ --base https://www.apkmirror.com --attribute href "span > a[rel = nofollow]") || return 1
+
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 	if [ "$is_bundle" = true ]; then
 		req "$url" "${output}.apkm" || return 1
 		merge_splits "${output}.apkm" "${output}"
@@ -478,11 +535,20 @@ get_uptodown_resp() {
 get_uptodown_vers() { $HTMLQ --text ".version" <<<"$__UPTODOWN_RESP__"; }
 dl_uptodown() {
 	local uptodown_dlurl=$1 version=$2 output=$3 arch=$4 _dpi=$5
+<<<<<<< HEAD
 	local apparch
 	if [ "$arch" = "arm-v7a" ]; then arch="armeabi-v7a"; fi
 	if [ "$arch" = all ]; then
 		apparch=('arm64-v8a, armeabi-v7a, x86_64' 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a')
 	else apparch=("$arch" 'arm64-v8a, armeabi-v7a, x86_64' 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a'); fi
+=======
+	if [ "$arch" = "arm-v7a" ]; then arch="armeabi-v7a"; fi
+
+	local apparch=('arm64-v8a, armeabi-v7a, x86_64' 'arm64-v8a, armeabi-v7a, x86, x86_64' 'arm64-v8a, armeabi-v7a')
+	if [ "$arch" != all ]; then
+		apparch+=("$arch")
+	fi
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 
 	local op resp data_code
 	data_code=$($HTMLQ "#detail-app-name" --attribute data-code <<<"$__UPTODOWN_RESP__")
@@ -535,9 +601,29 @@ get_uptodown_pkg_name() { $HTMLQ --text "tr.full:nth-child(1) > td:nth-child(3)"
 # -------------------- archive --------------------
 dl_archive() {
 	local url=$1 version=$2 output=$3 arch=$4
+<<<<<<< HEAD
 	local path version=${version// /}
 	path=$(grep "${version_f#v}-${arch// /}" <<<"$__ARCHIVE_RESP__") || return 1
 	req "${url}/${path}" "$output"
+=======
+	local path output_m version=${version// /}
+
+	if [ -f "${output}.apkm" ]; then
+		merge_splits "${output}.apkm" "$output"
+		return 0
+	fi
+
+	path=$(grep -m1 "${version_f#v}-${arch// /}" <<<"$__ARCHIVE_RESP__") || return 1
+	if [ "${path##*.}" = "apkm" ]; then
+		output_m="${output}.apkm"
+	else
+		output_m=$output
+	fi
+	req "${url}/${path}" "$output_m" || return 1
+	if [ "${path##*.}" = "apkm" ]; then
+		merge_splits "$output_m" "$output"
+	fi
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 }
 get_archive_resp() {
 	local r
@@ -550,7 +636,11 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 
 # -------------------- direct --------------------
 dl_direct() {
+<<<<<<< HEAD
 	local url=$1 version=${2// /-} output=$3 arch=$4 dpi=$5
+=======
+	local url=$1 version=${2// /-} output=$3 arch=$4 _dpi=$5
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 	req "$url" "${output}" || return 1
 }
 get_direct_vers() { cut -d- -f2 <<<"$__DIRECT_APKNAME__"; }
@@ -679,9 +769,29 @@ build_rv() {
 			return 0
 		fi
 	fi
+<<<<<<< HEAD
 	if [ ! -f "${stock_apk}.apkm" ] && ! OP=$(check_sig "$stock_apk" "$pkg_name" 2>&1) && ! grep -qFx "ERROR: Missing META-INF/MANIFEST.MF" <<<"$OP"; then
 		epr "Not building $table, apk signature mismatch '$stock_apk': $OP"
 		return 0
+=======
+
+	local sig_op
+	if [ -f "${stock_apk}.apkm" ]; then
+		rm -rf "${stock_apk}-zip" || :
+		unzip -j "${stock_apk}.apkm" -d "${stock_apk}-zip" >/dev/null
+		for a in "${stock_apk}"-zip/*.apk; do
+			if ! sig_op=$(check_sig "$a" "$pkg_name" 2>&1); then
+				epr "Not building $table, apk signature mismatch '$a': $sig_op"
+				return 0
+			fi
+		done
+		rm -rf "${stock_apk}-zip" || :
+	else
+		if ! sig_op=$(check_sig "$stock_apk" "$pkg_name" 2>&1); then
+			epr "Not building $table, apk signature mismatch '$stock_apk': $sig_op"
+			return 0
+		fi
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 	fi
 	log "${table}: ${version}"
 
@@ -788,7 +898,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MODULE_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi

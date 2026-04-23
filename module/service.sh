@@ -25,7 +25,11 @@ run() {
 
 	BASEPATH=${BASEPATH##*:} BASEPATH=${BASEPATH%/*}
 	if [ ! -d "$BASEPATH/lib" ]; then
+<<<<<<< HEAD
 		err "mount failed (ROM issue). Dont report this, consider using rvmm-zygisk-mount."
+=======
+		err "mount failed. Dont report this, consider using rvmm-zygisk-mount"
+>>>>>>> 3b6fbd6b89cd8358f9a89a49ffcbe9a1527af689
 		return
 	fi
 	VERSION=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 versionName) VERSION="${VERSION#*=}"
