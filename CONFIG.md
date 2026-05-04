@@ -12,8 +12,13 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
 
 ## More about other options:
 
+<<<<<<< HEAD
 There exists an example below with all defaults shown and all the keys explicitly set.
 **All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.
+=======
+There exists an example below with all defaults shown and all the keys explicitly set.  
+**All keys are optional** (except download urls) and are assigned to their default values if not set explicitly.  
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 
 ```toml
 parallel-jobs = 1                    # amount of cores to use for parallel patching, if not set $(nproc) is used
@@ -52,7 +57,11 @@ excluded-patches = """\
   """
 
 included-patches = "'Some Patch'"                          # whitespace seperated list of non-default patches to include. default: ""
+<<<<<<< HEAD
 include-stock = true                                       # includes stock apk in the module. default: true
+=======
+include-stock = "merged"                                   # 'merged', 'split' or 'disable'. default: merged
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 exclusive-patches = false                                  # exclude all patches by default. default: false
 
 apkmirror-dlurl = "https://www.apkmirror.com/apk/inc/app"
