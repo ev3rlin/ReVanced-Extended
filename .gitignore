@@ -6,3 +6,7 @@ test*
 /logs
 build.md
 cmpr
+<<<<<<< HEAD
+=======
+*-temporary-files
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
