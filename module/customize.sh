@@ -37,15 +37,6 @@ pmex() {
 	return $RET
 }
 
-<<<<<<< HEAD
-if ! pmex path "$PKG_NAME" >&2; then
-	if pmex install-existing "$PKG_NAME" >&2; then
-		pmex uninstall-system-updates "$PKG_NAME"
-	fi
-fi
-
-IS_SYS=false
-=======
 if OP=$(dumpsys package "$PKG_NAME") && [ "$OP" ]; then
 	if echo "$OP" | grep -m1 pkgFlags | grep -Fq UPDATED_SYSTEM_APP; then
 		pmex uninstall-system-updates "$PKG_NAME" >/dev/null 2>&1
@@ -56,39 +47,11 @@ else
 	fi
 fi
 
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 INS=true
 if BASEPATH=$(pmex path "$PKG_NAME"); then
 	echo >&2 "'$BASEPATH'"
 	BASEPATH=${BASEPATH##*:} BASEPATH=${BASEPATH%/*}
 	if [ "${BASEPATH:1:4}" != data ]; then
-<<<<<<< HEAD
-		ui_print "* $PKG_NAME is a system app."
-		IS_SYS=true
-	elif [ ! -f "$MODPATH/$PKG_NAME.apk" ]; then
-		ui_print "* Stock $PKG_NAME APK was not found"
-		VERSION=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 versionName) VERSION="${VERSION#*=}"
-		if [ "$VERSION" = "$PKG_VER" ] || [ -z "$VERSION" ]; then
-			ui_print "* Skipping stock installation"
-			INS=false
-		else
-			abort "ERROR: Version mismatch
-			installed: $VERSION
-			module:    $PKG_VER
-			"
-		fi
-	elif "${MODPATH:?}/bin/$ARCH/cmpr" "$BASEPATH/base.apk" "$MODPATH/$PKG_NAME.apk"; then
-		ui_print "* $PKG_NAME is up-to-date"
-		INS=false
-	fi
-fi
-
-install() {
-	if [ ! -f "$MODPATH/$PKG_NAME.apk" ]; then
-		abort "ERROR: Stock $PKG_NAME apk was not found"
-	fi
-	ui_print "* Updating $PKG_NAME to $PKG_VER"
-=======
 		ui_print "* Detected $PKG_NAME as a system app"
 		SCNM="/data/adb/post-fs-data.d/$PKG_NAME-uninstall.sh"
 		mkdir -p /data/adb/post-fs-data.d
@@ -122,72 +85,21 @@ install() {
 	if [ ! -f "$MODPATH/stock/base.apk" ]; then
 		abort "ERROR: Stock $PKG_NAME apk was not found"
 	fi
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 	install_err=""
 	VERIF1=$(settings get global verifier_verify_adb_installs)
 	VERIF2=$(settings get global package_verifier_enable)
 	settings put global verifier_verify_adb_installs 0
 	settings put global package_verifier_enable 0
-<<<<<<< HEAD
-	SZ=$(stat -c "%s" "$MODPATH/$PKG_NAME.apk")
-	for IT in 1 2; do
-		if ! SES=$(pmex install-create --user 0 -i com.android.vending -r -d -S "$SZ"); then
-=======
 
 	SZ=$(stat -c "%s" "$MODPATH"/stock/*.apk | awk '{sum += $0} END {print sum}')
 	for IT in 1 2; do
 		ui_print "* Updating $PKG_NAME to $PKG_VER"
 		if ! SES=$(pmex install-create --user 0 -i com.android.vending -r -S "$SZ"); then
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 			ui_print "ERROR: install-create failed"
 			install_err="$SES"
 			break
 		fi
 		SES=${SES#*[} SES=${SES%]*}
-<<<<<<< HEAD
-		set_perm "$MODPATH/$PKG_NAME.apk" 1000 1000 644 u:object_r:apk_data_file:s0
-		if ! op=$(pmex install-write -S "$SZ" "$SES" "$PKG_NAME.apk" "$MODPATH/$PKG_NAME.apk"); then
-			ui_print "ERROR: install-write failed"
-			install_err="$op"
-			break
-		fi
-		if ! op=$(pmex install-commit "$SES"); then
-			ui_print "$op"
-			if echo "$op" | grep -q -e INSTALL_FAILED_VERSION_DOWNGRADE -e INSTALL_FAILED_UPDATE_INCOMPATIBLE; then
-				ui_print "* Handling install error"
-				pmex uninstall-system-updates "$PKG_NAME"
-				if BASEPATH=$(pmex path "$PKG_NAME"); then
-					BASEPATH=${BASEPATH##*:} BASEPATH=${BASEPATH%/*}
-					if [ "${BASEPATH:1:4}" != data ]; then IS_SYS=true; fi
-				fi
-				if [ "$IS_SYS" = true ]; then
-					SCNM="/data/adb/post-fs-data.d/$PKG_NAME-uninstall.sh"
-					if [ -f "$SCNM" ]; then
-						ui_print "* Remove the old module. Reboot and reflash!"
-						ui_print ""
-						install_err=" "
-						break
-					fi
-					mkdir -p /data/adb/rvhc/empty /data/adb/post-fs-data.d
-					echo "mount -o bind /data/adb/rvhc/empty $BASEPATH" >"$SCNM"
-					chmod +x "$SCNM"
-					ui_print "* Created the uninstall script."
-					ui_print ""
-					ui_print "* Reboot and reflash the module!"
-					install_err=" "
-					break
-				else
-					ui_print "* Uninstalling..."
-					if ! op=$(pmex uninstall -k --user 0 "$PKG_NAME"); then
-						ui_print "$op"
-						if [ $IT = 2 ]; then
-							install_err="ERROR: pm uninstall failed."
-							break
-						fi
-					fi
-					continue
-				fi
-=======
 
 		for apki in "$MODPATH/stock"/*.apk; do
 			set_perm "${apki}" 1000 1000 644 u:object_r:apk_data_file:s0
@@ -211,7 +123,6 @@ install() {
 					fi
 				fi
 				continue
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 			fi
 			ui_print "ERROR: install-commit failed"
 			install_err="$op"
@@ -228,12 +139,7 @@ install() {
 	settings put global verifier_verify_adb_installs "$VERIF1"
 	settings put global package_verifier_enable "$VERIF2"
 	if [ "$install_err" ]; then
-<<<<<<< HEAD
-		ui_print "$install_err"
-		abort "ERROR: disable the module, reboot, install $PKG_NAME manually and reflash again"
-=======
 		abort "$install_err"
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 	fi
 }
 if [ $INS = true ] && ! install; then abort; fi
@@ -241,19 +147,11 @@ BASEPATHLIB=${BASEPATH}/lib/${ARCH}
 if [ $INS = true ] || [ -z "$(ls -A1 "$BASEPATHLIB")" ]; then
 	ui_print "* Extracting native libs"
 	if [ ! -d "$BASEPATHLIB" ]; then mkdir -p "$BASEPATHLIB"; else rm -f "$BASEPATHLIB"/* >/dev/null 2>&1 || :; fi
-<<<<<<< HEAD
-	if ! op=$(unzip -o -j "$MODPATH/$PKG_NAME.apk" "lib/${ARCH_LIB}/*" -d "$BASEPATHLIB" 2>&1); then
-		ui_print "ERROR: extracting native libs failed"
-		abort "$op"
-	fi
-	set_perm_recursive "${BASEPATH}/lib" 1000 1000 755 755 u:object_r:apk_data_file:s0
-=======
 	if op=$(unzip -o -j "$MODPATH/stock/base.apk" "lib/${ARCH_LIB}/*" -d "$BASEPATHLIB" 2>&1); then
 		set_perm_recursive "${BASEPATH}/lib" 1000 1000 755 755 u:object_r:apk_data_file:s0
 	else
 		echo >&2 "ERROR: extracting native libs failed: '$op'"
 	fi
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 fi
 
 ui_print "* Setting Permissions"
@@ -271,16 +169,6 @@ fi
 am force-stop "$PKG_NAME"
 ui_print "* Optimizing $PKG_NAME"
 
-<<<<<<< HEAD
-cmd package compile -m speed-profile -f "$PKG_NAME"
-# nohup cmd package compile -m speed-profile -f "$PKG_NAME" >/dev/null 2>&1
-
-if [ "$KSU" ]; then
-	UID=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 uid)
-	UID=${UID#*=} UID=${UID%% *}
-	if [ -z "$UID" ]; then
-		UID=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 userId)
-=======
 cmd package compile -m speed-profile -f "$PKG_NAME" >/dev/null 2>&1
 # nohup cmd package compile -m speed-profile -f "$PKG_NAME" >/dev/null 2>&1
 
@@ -289,7 +177,6 @@ if [ "$KSU" ]; then
 	UID=${UID#*=} UID=${UID%% *}
 	if [ -z "$UID" ]; then
 		UID=$(dumpsys package "$PKG_NAME" 2>&1 | grep -m1 userId=)
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 		UID=${UID#*=} UID=${UID%% *}
 	fi
 	if [ "$UID" ]; then
@@ -297,17 +184,6 @@ if [ "$KSU" ]; then
 			ui_print "  $OP"
 			ui_print "* Because you are using a fork of KernelSU, "
 			ui_print "  you need to go to your root manager app and"
-<<<<<<< HEAD
-			ui_print "  disable 'Unmount modules' option for $PKG_NAME"
-		fi
-	else
-		ui_print "ERROR: UID could not be found for $PKG_NAME"
-		dumpsys package "$PKG_NAME" >&2
-	fi
-fi
-
-rm -rf "${MODPATH:?}/bin" "$MODPATH/$PKG_NAME.apk"
-=======
 			ui_print "  disable 'Unmount modules' for $PKG_NAME"
 		fi
 	else
@@ -316,8 +192,7 @@ rm -rf "${MODPATH:?}/bin" "$MODPATH/$PKG_NAME.apk"
 fi
 
 rm -rf "${MODPATH:?}/bin" "$MODPATH/stock/"
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 
 ui_print "* Done"
-ui_print "  by j-hc (github.com/j-hc)"
+ui_print "  by ev3rlin (github.com/ev3rlin)"
 ui_print " "
