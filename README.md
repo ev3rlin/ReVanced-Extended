@@ -40,12 +40,12 @@
 ## 📝 Notes
 
   * <ins>Root</ins> versions: use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music from Play Store if you are using magisk modules
-  * <ins>Non-root</ins> versions: require [MicroG](https://github.com/ReVanced/GmsCore) to work
+  * <ins>Non-root</ins> versions: require [MicroG-RE](https://github.com/MorpheApp/MicroG-RE) to work
 
 ## 🙏 Credits
 
   [j-hc](https://github.com/j-hc) for [zygisk-detach](https://github.com/j-hc/zygisk-detach) and the [ReVanced apps builder](https://github.com/j-hc/revanced-magisk-module) and some more technical stuff
 
-  [ReVanced Team](https://github.com/revanced) for [MicroG](https://github.com/ReVanced/GmsCore)
+  [Morphe](https://github.com/MorpheApp) for [MicroG-RE](https://github.com/MorpheApp/MicroG-RE)
 
   [anddea](https://github.com/anddea) for [revanced-extended patches](https://github.com/anddea/revanced-patches)

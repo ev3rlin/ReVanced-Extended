@@ -14,16 +14,21 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
+
+      - name: Load previous build state
+        run: |
+          # Load build-state.md from update branch for diff-based changelog
+          git show origin/update:build-state.md > build-state.md 2>/dev/null || :
 
       - name: Update config
         if: ${{ inputs.from_ci }}
@@ -41,8 +46,14 @@ jobs:
           # Reload config after potential app version updates
           toml_prep config.toml
 
-          # Load build.md from update branch if it exists (for patches updates check)
-          if git show origin/update:build.md > build.md 2>/dev/null; then
+          # Load full state for patches updates check (prefer build-state.md over build.md)
+          if [ -s build-state.md ]; then
+            cp build-state.md build.md
+          else
+            git show origin/update:build.md > build.md 2>/dev/null || :
+          fi
+
+          if [ -s build.md ]; then
             # Generates config.json if there are patches updates
             UPDATE_CFG=$(./build.sh config.toml --config-update)
             if [ "$UPDATE_CFG" ]; then
@@ -106,6 +117,7 @@ jobs:
           cat build.md >> "$GITHUB_OUTPUT"
           echo "${DELIM}" >> "$GITHUB_OUTPUT"
           cp -f build.md build.tmp
+          cp -f build-state.md build-state.tmp 2>/dev/null || :
 
       - name: Upload modules to release
         uses: svenstaro/upload-release-action@v2
@@ -119,12 +131,13 @@ jobs:
           overwrite: false
           prerelease: ${{ github.ref_name != 'main' }}
 
-      - name: Update changelog and Magisk update json
+      - name: Update changelog and update json
         id: update_config
         if: github.ref_name == 'main'
         run: |
           git checkout -f update || git switch --discard-changes --orphan update
           cp -f build.tmp build.md
+          cp -f build-state.tmp build-state.md 2>/dev/null || :
           get_update_json() {
             echo "{
             \"version\": \"$1\",
@@ -135,8 +148,8 @@ jobs:
           }
 
           cd build || { echo "build folder not found"; exit 1; }
-          for OUTPUT in *magisk*.zip; do
-            [ "$OUTPUT" = "*magisk*.zip" ] && continue
+          for OUTPUT in *module*.zip; do
+            [ "$OUTPUT" = "*module*.zip" ] && continue
             ZIP_S=$(unzip -p "$OUTPUT" module.prop)
             if ! UPDATE_JSON=$(echo "$ZIP_S" | grep updateJson); then continue; fi
             UPDATE_JSON="${UPDATE_JSON##*/}"
@@ -149,12 +162,12 @@ jobs:
 
           find . -name "*-update.json" | grep . || : >dummy-update.json
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v7
         if: github.ref_name == 'main'
         with:
           branch: update
           skip_checkout: true
-          file_pattern: build.md *-update.json
+          file_pattern: build.md build-state.md *-update.json
           commit_message: Bump version ${{ steps.release_info.outputs.NEXT_VER_CODE }}
 
       - name: Report to Telegram
@@ -170,7 +183,7 @@ jobs:
           APKS=""
           MODULES=""
           NOTES=""
-          MICROG_URL="https://github.com/ReVanced/GmsCore/releases"
+          MICROG_URL="https://github.com/MorpheApp/MicroG-RE"
           ZYGISK_DETACH_URL="https://github.com/j-hc/zygisk-detach"
 
           for OUTPUT in *; do
@@ -185,11 +198,11 @@ jobs:
           MODULES=${MODULES#"$NL"}
           APKS=${APKS#"$NL"}
 
-          NOTES+="${NL}ℹ️ Install [Microg](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
-          NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach root RVX YouTube and YouTube Music from Play Store"
+          NOTES+="${NL}ℹ️ Install [MicroG-RE](${MICROG_URL}) for non-root YouTube and YouTube Music APKs"
+          NOTES+="${NL}ℹ️ Use [zygisk-detach](${ZYGISK_DETACH_URL}) to detach YouTube and YouTube Music from Play Store to prevent auto-updates and root modules issues"
           NOTES=${NOTES#"$NL"}
 
-          BODY="$(sed 's/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/###//g; s/^- /↪ /g; /^==/d;' ../build.md)"
+          BODY="$(sed 's/^### \(.*\)/*▼ \1:*/g; s/^\* \*\*/↪ \*\*/g; s/^\* `/↪ \*\*/g; s/`/\*/g; s/^\* /\↪/g; s/\*\*/\*/g; s/^- /↪ /g; /^==/d;' ../build.md)"
           MSG="*New build!*
 
           ${BODY}

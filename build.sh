@@ -2,14 +2,15 @@
 
 set -euo pipefail
 shopt -s nullglob
-trap "rm -rf temp/*tmp.* temp/*/*tmp.* temp/*-temporary-files; exit 130" INT
-
-if [ "${1-}" = "clean" ]; then
-	rm -rf temp build logs build.md
-	exit 0
-fi
 
 source utils.sh
+
+trap "abort" INT
+
+if [ "${1-}" = "clean" ]; then
+	rm -r "$TEMP_DIR" "$BUILD_DIR" build.md
+	exit 0
+fi
 
 jq --version >/dev/null || abort "\`jq\` is not installed. install it with 'apt install jq' or equivalent"
 java --version >/dev/null || abort "\`openjdk 17\` is not installed. install it with 'apt install openjdk-17-jre' or equivalent"
@@ -30,7 +31,7 @@ REMOVE_RV_INTEGRATIONS_CHECKS=$(toml_get "$main_config_t" remove-rv-integrations
 DEF_PATCHES_VER=$(toml_get "$main_config_t" patches-version) || DEF_PATCHES_VER="latest"
 DEF_CLI_VER=$(toml_get "$main_config_t" cli-version) || DEF_CLI_VER="latest"
 DEF_PATCHES_SRC=$(toml_get "$main_config_t" patches-source) || DEF_PATCHES_SRC="ReVanced/revanced-patches"
-DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="j-hc/revanced-cli"
+DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="ReVanced/revanced-cli"
 DEF_RV_BRAND=$(toml_get "$main_config_t" rv-brand) || DEF_RV_BRAND="ReVanced"
 DEF_DPI_LIST=$(toml_get "$main_config_t" dpi) || DEF_DPI_LIST="nodpi anydpi"
 mkdir -p "$TEMP_DIR" "$BUILD_DIR"
@@ -40,17 +41,24 @@ if [ "${2-}" = "--config-update" ]; then
 	exit 0
 fi
 
+# [--- custom by @ev3rlin ---]
+# Save old build-state.md for diff-based changelog (full state from previous build)
+if [ -f build-state.md ] && [ -s build-state.md ]; then
+	cp build-state.md "$TEMP_DIR/old_build_state.md"
+fi
+# [--- ---]
+
 : >build.md
-ENABLE_MAGISK_UPDATE=$(toml_get "$main_config_t" enable-magisk-update) || ENABLE_MAGISK_UPDATE=true
-if [ "$ENABLE_MAGISK_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
-	pr "You are building locally. Magisk updates will not be enabled."
-	ENABLE_MAGISK_UPDATE=false
+ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
+if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
+	pr "You are building locally. Module updates will not be enabled."
+	ENABLE_MODULE_UPDATE=false
 fi
 if ((COMPRESSION_LEVEL > 9)) || ((COMPRESSION_LEVEL < 0)); then abort "compression-level must be within 0-9"; fi
 
-rm -rf revanced-magisk/bin/*/tmp.*
+rm -rf module/bin/*/tmp.*
 for file in "$TEMP_DIR"/*/changelog.md; do
-    [ -f "$file" ] && : > "$file"
+	[ -f "$file" ] && : >"$file"
 done
 
 mkdir -p ${MODULE_TEMPLATE_DIR}/bin/arm64 ${MODULE_TEMPLATE_DIR}/bin/arm ${MODULE_TEMPLATE_DIR}/bin/x86 ${MODULE_TEMPLATE_DIR}/bin/x64
@@ -59,7 +67,6 @@ gh_dl "${MODULE_TEMPLATE_DIR}/bin/arm/cmpr" "https://github.com/j-hc/cmpr/releas
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x86/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86"
 gh_dl "${MODULE_TEMPLATE_DIR}/bin/x64/cmpr" "https://github.com/j-hc/cmpr/releases/latest/download/cmpr-x86_64"
 
-declare -A cliriplib
 idx=0
 for table_name in $(toml_get_table_names); do
 	if [ -z "$table_name" ]; then continue; fi
@@ -79,21 +86,12 @@ for table_name in $(toml_get_table_names); do
 	cli_ver=$(toml_get "$t" cli-version) || cli_ver=$DEF_CLI_VER
 
 	if ! PREBUILTS="$(get_prebuilts "$cli_src" "$cli_ver" "$patches_src" "$patches_ver")"; then
-		abort "could not download rv prebuilts"
+		epr "Could not get prebuilts"
+		continue
 	fi
 	read -r cli_jar patches_jar <<<"$PREBUILTS"
 	app_args[cli]=$cli_jar
 	app_args[ptjar]=$patches_jar
-	if [[ -v cliriplib[${app_args[cli]}] ]]; then app_args[riplib]=${cliriplib[${app_args[cli]}]}; else
-		if [[ $(java -jar "${app_args[cli]}" patch 2>&1) == *rip-lib* ]]; then
-			cliriplib[${app_args[cli]}]=true
-			app_args[riplib]=true
-		else
-			cliriplib[${app_args[cli]}]=false
-			app_args[riplib]=false
-		fi
-	fi
-	if [ "${app_args[riplib]}" = "true" ] && [ "$(toml_get "$t" riplib)" = "false" ]; then app_args[riplib]=false; fi
 	app_args[rv_brand]=$(toml_get "$t" rv-brand) || app_args[rv_brand]=$DEF_RV_BRAND
 
 	app_args[excluded_patches]=$(toml_get "$t" excluded-patches) || app_args[excluded_patches]=""
@@ -110,23 +108,20 @@ for table_name in $(toml_get_table_names); do
 			abort "ERROR: build-mode '${app_args[build_mode]}' is not a valid option for '${table_name}': only 'both', 'apk' or 'module' is allowed"
 		fi
 	} || app_args[build_mode]=apk
-	app_args[uptodown_dlurl]=$(toml_get "$t" uptodown-dlurl) && {
-		app_args[uptodown_dlurl]=${app_args[uptodown_dlurl]%/}
-		app_args[uptodown_dlurl]=${app_args[uptodown_dlurl]%download}
-		app_args[uptodown_dlurl]=${app_args[uptodown_dlurl]%/}
-		app_args[dl_from]=uptodown
-	} || app_args[uptodown_dlurl]=""
-	app_args[apkmirror_dlurl]=$(toml_get "$t" apkmirror-dlurl) && {
-		app_args[apkmirror_dlurl]=${app_args[apkmirror_dlurl]%/}
-		app_args[dl_from]=apkmirror
-	} || app_args[apkmirror_dlurl]=""
-	app_args[archive_dlurl]=$(toml_get "$t" archive-dlurl) && {
-		app_args[archive_dlurl]=${app_args[archive_dlurl]%/}
-		app_args[dl_from]=archive
-	} || app_args[archive_dlurl]=""
-	if [ -z "${app_args[dl_from]-}" ]; then abort "ERROR: no 'apkmirror_dlurl', 'uptodown_dlurl' or 'archive_dlurl' option was set for '$table_name'."; fi
+
+	for dl_from in "${DL_SRCS[@]}"; do
+		if app_args[${dl_from}_dlurl]=$(toml_get "$t" "${dl_from}-dlurl"); then
+			app_args[${dl_from}_dlurl]=${app_args[${dl_from}_dlurl]%/}
+			app_args[${dl_from}_dlurl]=${app_args[${dl_from}_dlurl]%download}
+			app_args[${dl_from}_dlurl]=${app_args[${dl_from}_dlurl]%/}
+			app_args[dl_from]=${dl_from}
+		else
+			app_args[${dl_from}_dlurl]=""
+		fi
+	done
+	if [ -z "${app_args[dl_from]-}" ]; then abort "ERROR: no 'dlurl' option was set for '$table_name'. (${DL_SRCS[*]})"; fi
 	app_args[arch]=$(toml_get "$t" arch) || app_args[arch]="all"
-	if [ "${app_args[arch]}" != "both" ] && [ "${app_args[arch]}" != "all" ] && [[ ${app_args[arch]} != "arm64-v8a"* ]] && [[ ${app_args[arch]} != "arm-v7a"* ]]; then
+	if ! isoneof "${app_args[arch]}" "both" "all" "arm64-v8a" "arm-v7a" "x86_64" "x86"; then
 		abort "wrong arch '${app_args[arch]}' for '$table_name'"
 	fi
 
@@ -166,13 +161,38 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+# [--- custom by @ev3rlin ---]
 # Initial changelog logic
-# log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
+# log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
 # log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
 # log "$(cat "$TEMP_DIR"/*/changelog.md)"
 
 log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
+
+# Save full state for next build's comparison
+cp build.md build-state.md
+
+# Filter changelog to show only changes compared to previous build
+if [ -f "$TEMP_DIR/old_build_state.md" ]; then
+	_full_build=$(cat build.md)
+	_old_state=$(sed 's/[[:space:]]*$//' "$TEMP_DIR/old_build_state.md")
+	: >build.md
+
+	_has_changes=false
+	while IFS= read -r line; do
+		_cl=$(sed 's/[[:space:]]*$//' <<<"$line")
+		[ -z "$_cl" ] && continue
+		if ! grep -qxF "$_cl" <<<"$_old_state"; then
+			if [ "$_has_changes" = false ]; then
+				log "### Changelog"
+				_has_changes=true
+			fi
+			log "$_cl"
+		fi
+	done <<<"$_full_build"
+fi
+# [--- ---]
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -180,7 +200,8 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
-# New skipped changelog logic with links
+# [--- custom by @ev3rlin ---]
+# New skipped changelog logic with links (@ev3rlin changes)
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 # if [ -n "$SKIPPED" ]; then
@@ -195,5 +216,6 @@ fi
 # else
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
+# [--- ---]
 
 pr "Done"
