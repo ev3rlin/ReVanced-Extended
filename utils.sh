@@ -128,6 +128,7 @@ get_prebuilts() {
 		fi
 
 		if [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			# Initial changelog structure
 			if [ "$grab_cl" = true ]; then echo -e "[Patches Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -139,6 +140,9 @@ get_prebuilts() {
 			# fi
 			# [--- ---]
 
+=======
+			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				local extensions_ext
 				extensions_ext=$(unzip -l "${file}" "extensions/shared.*" | grep -o "shared\..*") extensions_ext="${extensions_ext#*.}"
@@ -171,6 +175,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 get_latest_app_version() {
     local src=$1 app=$2
@@ -222,6 +227,8 @@ auto_update_app_versions() {
 }
 # [--- ---]
 
+=======
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -877,7 +884,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MODULE_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
