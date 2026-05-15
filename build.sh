@@ -41,10 +41,13 @@ if [ "${2-}" = "--config-update" ]; then
 	exit 0
 fi
 
+# [--- custom by @ev3rlin ---]
 # Save old build-state.md for diff-based changelog (full state from previous build)
 if [ -f build-state.md ] && [ -s build-state.md ]; then
 	cp build-state.md "$TEMP_DIR/old_build_state.md"
 fi
+# [--- ---]
+
 : >build.md
 ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
 if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
@@ -158,6 +161,7 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+# [--- custom by @ev3rlin ---]
 # Initial changelog logic
 # log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
@@ -175,14 +179,11 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 	_old_state=$(sed 's/[[:space:]]*$//' "$TEMP_DIR/old_build_state.md")
 	: >build.md
 
-	# Custom changelog (@ev3rlin changes)
 	_has_changes=false
 	while IFS= read -r line; do
 		_cl=$(sed 's/[[:space:]]*$//' <<<"$line")
 		[ -z "$_cl" ] && continue
 		if ! grep -qxF "$_cl" <<<"$_old_state"; then
-
-			# Custom changelog (@ev3rlin changes)
 			if [ "$_has_changes" = false ]; then
 				log "### Changelog"
 				_has_changes=true
@@ -191,6 +192,7 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 		fi
 	done <<<"$_full_build"
 fi
+# [--- ---]
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -198,6 +200,7 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
+# [--- custom by @ev3rlin ---]
 # New skipped changelog logic with links (@ev3rlin changes)
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
@@ -213,5 +216,6 @@ fi
 # else
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
+# [--- ---]
 
 pr "Done"
