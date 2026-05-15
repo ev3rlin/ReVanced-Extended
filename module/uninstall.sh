@@ -1,9 +1,13 @@
 #!/system/bin/sh
+{
 
-MODDIR=${0%/*}
-. "$MODDIR/config"
+	until [ "$(getprop sys.boot_completed)" = 1 ]; do sleep 1; done
+	until [ -d "/sdcard/Android" ]; do sleep 1; done
 
-rm -f "/data/adb/rvhc/${MODDIR##*/}.apk"
-rmdir "/data/adb/rvhc"
+	MODDIR=${0%/*}
+	. "$MODDIR/config"
 
-rm -f "/data/adb/post-fs-data.d/$PKG_NAME-uninstall.sh"
+	rm "/data/adb/rvhc/${MODDIR##*/}.apk"
+	rmdir "/data/adb/rvhc"
+	rm "/data/adb/post-fs-data.d/$PKG_NAME-uninstall.sh"
+} &
