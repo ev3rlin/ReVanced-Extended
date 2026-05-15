@@ -33,10 +33,6 @@ DEF_CLI_VER=$(toml_get "$main_config_t" cli-version) || DEF_CLI_VER="latest"
 DEF_PATCHES_SRC=$(toml_get "$main_config_t" patches-source) || DEF_PATCHES_SRC="ReVanced/revanced-patches"
 DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="ReVanced/revanced-cli"
 DEF_RV_BRAND=$(toml_get "$main_config_t" rv-brand) || DEF_RV_BRAND="ReVanced"
-<<<<<<< HEAD
-DEF_DPI_LIST=$(toml_get "$main_config_t" dpi) || DEF_DPI_LIST="nodpi anydpi"
-=======
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 mkdir -p "$TEMP_DIR" "$BUILD_DIR"
 
 if [ "${2-}" = "--config-update" ]; then
@@ -44,7 +40,6 @@ if [ "${2-}" = "--config-update" ]; then
 	exit 0
 fi
 
-<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # Save old build-state.md for diff-based changelog (full state from previous build)
 if [ -f build-state.md ] && [ -s build-state.md ]; then
@@ -52,8 +47,6 @@ if [ -f build-state.md ] && [ -s build-state.md ]; then
 fi
 # [--- ---]
 
-=======
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 : >build.md
 ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
 if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
@@ -114,14 +107,11 @@ for table_name in $(toml_get_table_names); do
 			abort "ERROR: build-mode '${app_args[build_mode]}' is not a valid option for '${table_name}': only 'both', 'apk' or 'module' is allowed"
 		fi
 	} || app_args[build_mode]=apk
-<<<<<<< HEAD
-=======
 	app_args[include_stock]=$(toml_get "$t" include-stock) && {
 		if ! isoneof "${app_args[include_stock]}" disable merged split; then
 			abort "ERROR: include-stock '${app_args[include_stock]}' is not a valid option for '${table_name}': only 'disable', 'merged' or 'split' is allowed"
 		fi
 	} || app_args[include_stock]=merged
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 
 	for dl_from in "${DL_SRCS[@]}"; do
 		if app_args[${dl_from}_dlurl]=$(toml_get "$t" "${dl_from}-dlurl"); then
@@ -139,13 +129,8 @@ for table_name in $(toml_get_table_names); do
 		abort "wrong arch '${app_args[arch]}' for '$table_name'"
 	fi
 
-<<<<<<< HEAD
-	app_args[include_stock]=$(toml_get "$t" include-stock) || app_args[include_stock]=true && vtf "${app_args[include_stock]}" "include-stock"
-	app_args[dpi]=$(toml_get "$t" dpi) || app_args[dpi]="$DEF_DPI_LIST"
-=======
 	app_args[pkg_name]=$(toml_get "$t" pkg-name) || app_args[pkg_name]=""
 	app_args[dpi]=$(toml_get "$t" dpi) || app_args[dpi]=""
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 	table_name_f=${table_name,,}
 	table_name_f=${table_name_f// /-}
 	app_args[module_prop_name]=$(toml_get "$t" module-prop-name) || app_args[module_prop_name]="${table_name_f}-jhc"
@@ -180,7 +165,6 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
-<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # Initial changelog logic
 # log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
@@ -213,12 +197,6 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 	done <<<"$_full_build"
 fi
 # [--- ---]
-=======
-log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
-log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store"
-log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
-log "$(cat "$TEMP_DIR"/*/changelog.md)"
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -226,7 +204,6 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
-<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # New skipped changelog logic with links (@ev3rlin changes)
 
@@ -245,6 +222,4 @@ fi
 # fi
 # [--- ---]
 
-=======
->>>>>>> 4d9aefdd466566cda943e525cf9e0ade902b051a
 pr "Done"
