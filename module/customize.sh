@@ -194,5 +194,9 @@ fi
 rm -rf "${MODPATH:?}/bin" "$MODPATH/stock/"
 
 ui_print "* Done"
+<<<<<<< HEAD
 ui_print "  by ev3rlin (github.com/ev3rlin)"
+=======
+ui_print "  by j-hc (github.com/j-hc)"
+>>>>>>> a74a569f8b2dbed241ff6b826f31721de8e2415a
 ui_print " "
