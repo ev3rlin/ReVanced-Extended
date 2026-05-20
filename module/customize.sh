@@ -19,6 +19,7 @@ RVPATH=/data/adb/rvhc/${MODPATH##*/}.apk
 
 set_perm_recursive "$MODPATH/bin" 0 0 0755 0777
 
+<<<<<<< HEAD
 if su -M -c true >/dev/null 2>/dev/null; then
 	alias mm='su -M -c'
 else alias mm='nsenter -t1 -m'; fi
@@ -28,6 +29,12 @@ mm grep -F "$PKG_NAME" /proc/mounts | while read -r line; do
 	ui_print "* Un-mount"
 	mp=${line#* } mp=${mp%% *}
 	mm umount -l "${mp%%\\*}" || true
+=======
+su -M -c grep -F "$PKG_NAME" /proc/mounts | while read -r line; do
+	ui_print "* Un-mount"
+	mp=${line#* } mp=${mp%% *}
+	su -M -c umount -l "${mp%%\\*}"
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 done
 am force-stop "$PKG_NAME"
 
@@ -163,7 +170,11 @@ mkdir -p "/data/adb/rvhc"
 RVPATH=/data/adb/rvhc/${MODPATH##*/}.apk
 mv -f "$MODPATH/base.apk" "$RVPATH"
 
+<<<<<<< HEAD
 if ! op=$(mm mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1 </dev/null); then
+=======
+if ! op=$(su -M -c mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1); then
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 	ui_print "ERROR: Mount failed!"
 	ui_print "$op"
 fi
