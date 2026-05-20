@@ -23,10 +23,11 @@ if su -M -c true >/dev/null 2>/dev/null; then
 	alias mm='su -M -c'
 else alias mm='nsenter -t1 -m'; fi
 
+# TEST-CONFLICT: keep custom wrapper path intentionally different from upstream.
 mm grep -F "$PKG_NAME" /proc/mounts | while read -r line; do
 	ui_print "* Un-mount"
 	mp=${line#* } mp=${mp%% *}
-	mm umount -l "${mp%%\\*}"
+	mm umount -l "${mp%%\\*}" || true
 done
 am force-stop "$PKG_NAME"
 
@@ -162,7 +163,7 @@ mkdir -p "/data/adb/rvhc"
 RVPATH=/data/adb/rvhc/${MODPATH##*/}.apk
 mv -f "$MODPATH/base.apk" "$RVPATH"
 
-if ! op=$(mm mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1); then
+if ! op=$(mm mount -o bind "$RVPATH" "$BASEPATH/base.apk" 2>&1 </dev/null); then
 	ui_print "ERROR: Mount failed!"
 	ui_print "$op"
 fi
@@ -194,5 +195,5 @@ fi
 rm -rf "${MODPATH:?}/bin" "$MODPATH/stock/"
 
 ui_print "* Done"
-ui_print "  by ev3rlin (github.com/ev3rlin)"
+ui_print "  by ev3rlin-test (github.com/ev3rlin)"
 ui_print " "
