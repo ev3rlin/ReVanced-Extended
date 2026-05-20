@@ -128,6 +128,7 @@ get_prebuilts() {
 		fi
 
 		if [ "$tag" = "Patches" ]; then
+<<<<<<< HEAD
 			# Initial changelog structure
 			if [ "$grab_cl" = true ]; then echo -e "[Patches Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -139,6 +140,9 @@ get_prebuilts() {
 			# fi
 			# [--- ---]
 
+=======
+			if [ "$grab_cl" = true ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
 				local extensions_ext
 				extensions_ext=$(unzip -l "${file}" "extensions/shared.*" | grep -o "shared\..*") extensions_ext="${extensions_ext#*.}"
@@ -171,6 +175,7 @@ set_prebuilts() {
 	TOML="${BIN_DIR}/toml/tq-${arch}"
 }
 
+<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 get_latest_app_version() {
     local src=$1 app=$2
@@ -222,6 +227,8 @@ auto_update_app_versions() {
 }
 # [--- ---]
 
+=======
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 config_update() {
 	if [ ! -f build.md ]; then abort "build.md not available"; fi
 	declare -A sources
@@ -305,7 +312,11 @@ get_highest_ver() {
 	local vers m
 	vers=$(tee)
 	m=$(head -1 <<<"$vers")
+<<<<<<< HEAD
 	if ! semver_validate "$m"; then echo "$m"; else sort -rV <<<"$vers" | head -1; fi
+=======
+	if ! semver_validate "$m"; then echo "$m"; else sort -s -t- -k1,1Vr <<<"$vers" | head -1; fi
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 }
 semver_validate() {
 	local a="${1%-*}"
@@ -877,7 +888,11 @@ module_prop() {
 name=${2}
 version=v${3}
 versionCode=${NEXT_VER_CODE}
+<<<<<<< HEAD
 author=ev3rlin
+=======
+author=j-hc
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 description=${4}" >"${6}/module.prop"
 
 	if [ "$ENABLE_MODULE_UPDATE" = true ]; then echo "updateJson=${5}" >>"${6}/module.prop"; fi
