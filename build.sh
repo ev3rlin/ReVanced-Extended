@@ -40,6 +40,7 @@ if [ "${2-}" = "--config-update" ]; then
 	exit 0
 fi
 
+<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # Save old build-state.md for diff-based changelog (full state from previous build)
 if [ -f build-state.md ] && [ -s build-state.md ]; then
@@ -47,6 +48,8 @@ if [ -f build-state.md ] && [ -s build-state.md ]; then
 fi
 # [--- ---]
 
+=======
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 : >build.md
 ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
 if [ "$ENABLE_MODULE_UPDATE" = true ] && [ -z "${GITHUB_REPOSITORY-}" ]; then
@@ -165,6 +168,7 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # Initial changelog logic
 # log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
@@ -197,6 +201,12 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 	done <<<"$_full_build"
 fi
 # [--- ---]
+=======
+log "\nInstall [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs"
+log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store"
+log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
+log "$(cat "$TEMP_DIR"/*/changelog.md)"
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
@@ -204,6 +214,7 @@ if [ -n "$SKIPPED" ]; then
 	log "$SKIPPED"
 fi
 
+<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # New skipped changelog logic with links (@ev3rlin changes)
 
@@ -222,4 +233,6 @@ fi
 # fi
 # [--- ---]
 
+=======
+>>>>>>> 180dbbebbd697a19eadb0497f284e5fc5be7595c
 pr "Done"
