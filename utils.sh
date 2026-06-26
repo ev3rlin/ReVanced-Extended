@@ -49,7 +49,7 @@ abort() {
 	epr "ABORT: ${1-}"
 	rm -rf ./${TEMP_DIR}/*tmp.* ./${TEMP_DIR}/*/*tmp.* ./${TEMP_DIR}/*-temporary-files ./*-temporary-files
 	trap - SIGTERM SIGINT EXIT
-	kill -- -$$ 2>/dev/null
+	kill -9 -- -$$ 2>/dev/null
 	exit 1
 }
 java() { env -i java --enable-native-access=ALL-UNNAMED "$@"; }
@@ -604,8 +604,11 @@ get_direct_resp() { __DIRECT_APKNAME__=$(awk -F/ '{print $NF}' <<<"$1"); }
 
 patch_apk() {
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 cli_jar=$4 patches_jar=$5
+	local tmp_files
+	tmp_files="$(pwd)/$(mktemp -d -p "$TEMP_DIR")"
+
 	local cmd="java -jar '$cli_jar' patch '$stock_input' --purge -o '$patched_apk' -p '$patches_jar' --keystore=ks.keystore \
---keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc $patcher_args"
+--keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc -t '$tmp_files' $patcher_args"
 
 	# TODO: remove this later
 	local cli_name
@@ -804,6 +807,8 @@ build_rv() {
 		if [ "$build_mode" = apk ]; then
 			if [ "${NORB:-}" != true ] || { [ ! -f "$patched_apk" ] && [ ! -f "$apk_output" ]; }; then
 				mv -f "$patched_apk" "$apk_output"
+			else
+				cp -f "$patched_apk" "$apk_output"
 			fi
 			pr "Built ${table} (non-root): '${apk_output}'"
 			continue
