@@ -24,6 +24,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+          persist-credentials: false
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT }}
 
       - name: Load previous build state
         run: |
@@ -106,6 +108,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git commit -m "Auto-update config.toml [CI]"
+            git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
             git push origin HEAD:$GITHUB_REF_NAME
           fi
 
