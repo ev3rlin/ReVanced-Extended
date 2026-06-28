@@ -173,10 +173,30 @@ set_prebuilts() {
 
 # [--- custom by @ev3rlin ---]
 get_latest_app_version() {
-    local src=$1 app=$2
-    local ver_file="patches/src/main/kotlin/app/revanced/patches/${app}/utils/compatibility/Constants.kt"
-    curl -s "https://raw.githubusercontent.com/${src}/dev/${ver_file}" 2>/dev/null \
-        | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -1
+	local src=$1 app=$2
+	local content=""
+	local ver_file="patches/src/main/kotlin/app/morphe/patches/${app}/utils/Constants.kt"
+
+	# New format only: fetch Constants.kt from app utils path on main branch.
+	content=$(curl -fsL "https://raw.githubusercontent.com/${src}/main/${ver_file}" 2>/dev/null) || return 1
+
+	[ -n "$content" ] || return 1
+
+	# Parse inline AppTarget entries and choose the highest semantic version.
+	local latest
+	latest=$(awk '
+		/AppTarget[[:space:]]*\(/ {
+			if (match($0, /version[[:space:]]*=[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)"/, m)) {
+				print m[1]
+			}
+		}
+	' <<<"$content" | sort -V | tail -1)
+
+	if [ -n "$latest" ]; then
+		echo "$latest"
+	else
+		return 1
+	fi
 }
 # [--- ---]
 
