@@ -175,19 +175,34 @@ set_prebuilts() {
 get_latest_app_version() {
 	local src=$1 app=$2
 	local content=""
-	local ver_file="patches/src/main/kotlin/app/morphe/patches/${app}/utils/Constants.kt"
+	local ver_file="patches/src/main/kotlin/app/morphe/patches/${app}/utils/compatibility/Constants.kt"
 
-	# New format only: fetch Constants.kt from app utils path on main branch.
+	# New format only: fetch Constants.kt from app utils/compatibility path on main branch.
 	content=$(curl -fsL "https://raw.githubusercontent.com/${src}/main/${ver_file}" 2>/dev/null) || return 1
 
 	[ -n "$content" ] || return 1
 
-	# Parse inline AppTarget entries and choose the highest semantic version.
+	# Parse AppTarget entries (inline or multiline) and choose the highest stable version.
 	local latest
 	latest=$(awk '
 		/AppTarget[[:space:]]*\(/ {
+			in_target = 1
+			version = ""
+			experimental = 0
+		}
+
+		in_target {
 			if (match($0, /version[[:space:]]*=[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)"/, m)) {
-				print m[1]
+				version = m[1]
+			}
+			if ($0 ~ /isExperimental[[:space:]]*=[[:space:]]*true/) {
+				experimental = 1
+			}
+			if ($0 ~ /\)/) {
+				if (version != "" && experimental == 0) {
+					print version
+				}
+				in_target = 0
 			}
 		}
 	' <<<"$content" | sort -V | tail -1)
