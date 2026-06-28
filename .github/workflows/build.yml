@@ -6,9 +6,6 @@ on:
         type: boolean
         required: false
         default: true
-    secrets:
-      CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT:
-        required: true
 
   workflow_dispatch:
 
@@ -100,43 +97,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
           NEXT_VER_CODE: ${{ steps.release_info.outputs.NEXT_VER_CODE }}
-
-      - name: Debug SSH auth for config push
-        if: ${{ inputs.from_ci }}
-        env:
-          CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT: ${{ secrets.CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT }}
-        run: |
-          set -e
-          echo "Branch: $GITHUB_REF_NAME"
-          echo "Remote before switch:"
-          git remote -v
-
-          if [ -z "$CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT" ]; then
-            echo "ERROR: CI deploy key secret is empty in this workflow context"
-            exit 1
-          fi
-
-          echo "Deploy key fingerprint from secret:"
-          printf '%s\n' "$CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT" | ssh-keygen -lf -
-
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
-
-          printf '%s\n' "$CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT" > ~/.ssh/ci_debug_key
-          chmod 600 ~/.ssh/ci_debug_key
-
-          echo "Testing SSH login to GitHub with deploy key..."
-          set +e
-          SSH_TEST_OUTPUT=$(ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -i ~/.ssh/ci_debug_key -T git@github.com 2>&1)
-          SSH_TEST_CODE=$?
-          set -e
-
-          echo "$SSH_TEST_OUTPUT"
-          if [ $SSH_TEST_CODE -ne 1 ] && [ $SSH_TEST_CODE -ne 0 ]; then
-            echo "ERROR: SSH auth test failed with code $SSH_TEST_CODE"
-            exit $SSH_TEST_CODE
-          fi
 
       - name: Commit config after successful build
         if: ${{ inputs.from_ci }}
