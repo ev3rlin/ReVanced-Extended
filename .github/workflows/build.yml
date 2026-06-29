@@ -70,7 +70,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TODAY=$(date +'%Y-%m-%d')
           BRANCH=${{ github.ref_name }}
 
           # Get all numeric tags, find highest, add 1
@@ -78,15 +77,11 @@ jobs:
           if [ -z "$MAX_TAG" ]; then MAX_TAG=0; fi
           NEXT_VER_CODE=$((MAX_TAG + 1))
 
-          # Count releases for this date to get index
-          COUNT=$(gh release list --limit 100 | grep "$TODAY" | wc -l)
-          INDEX=$((COUNT + 1))
-
           # Create release name based on branch
           if [ "$BRANCH" = "dev" ]; then
-            NAME="ReVanced Extended - $TODAY [dev] (v$INDEX)"
+            NAME="Build No. $NEXT_VER_CODE [dev]"
           else
-            NAME="ReVanced Extended - $TODAY (v$INDEX)"
+            NAME="Build No. $NEXT_VER_CODE"
           fi
 
           echo "NAME=$NAME" >> $GITHUB_OUTPUT
