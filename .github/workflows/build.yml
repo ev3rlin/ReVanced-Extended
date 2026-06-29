@@ -6,6 +6,9 @@ on:
         type: boolean
         required: false
         default: true
+    secrets:
+      CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT:
+        required: true
 
   workflow_dispatch:
 
@@ -24,6 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY_FOR_GITHUB_ACTIONS_BOT }}
 
       - name: Load previous build state
         run: |
