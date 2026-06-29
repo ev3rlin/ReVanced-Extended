@@ -32,17 +32,23 @@ jobs:
             exit 0
           fi
 
-          if ! git checkout origin/update build.md; then
-            echo "first time building!"
+          if ! git checkout origin/update build-state.md 2>/dev/null; then
+            if ! git checkout origin/update build.md; then
+              echo "first time building!"
+              echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          else
+            # Use build-state.md (full state) for config_update comparison
+            cp build-state.md build.md
+          fi
+
+          UPDATE_CFG=$(./build.sh config.toml --config-update)
+          if [ "$UPDATE_CFG" ]; then
+            echo "'$UPDATE_CFG'"
             echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
           else
-            UPDATE_CFG=$(./build.sh config.toml --config-update)
-            if [ "$UPDATE_CFG" ]; then
-              echo "'$UPDATE_CFG'"
-              echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
-            else
-              echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
-            fi
+            echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Clear older runs

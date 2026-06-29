@@ -33,13 +33,19 @@ DEF_CLI_VER=$(toml_get "$main_config_t" cli-version) || DEF_CLI_VER="latest"
 DEF_PATCHES_SRC=$(toml_get "$main_config_t" patches-source) || DEF_PATCHES_SRC="ReVanced/revanced-patches"
 DEF_CLI_SRC=$(toml_get "$main_config_t" cli-source) || DEF_CLI_SRC="ReVanced/revanced-cli"
 DEF_RV_BRAND=$(toml_get "$main_config_t" rv-brand) || DEF_RV_BRAND="ReVanced"
-DEF_DPI_LIST=$(toml_get "$main_config_t" dpi) || DEF_DPI_LIST="nodpi anydpi"
 mkdir -p "$TEMP_DIR" "$BUILD_DIR"
 
 if [ "${2-}" = "--config-update" ]; then
 	config_update
 	exit 0
 fi
+
+# [--- custom by @ev3rlin ---]
+# Save old build-state.md for diff-based changelog (full state from previous build)
+if [ -f build-state.md ] && [ -s build-state.md ]; then
+	cp build-state.md "$TEMP_DIR/old_build_state.md"
+fi
+# [--- ---]
 
 : >build.md
 ENABLE_MODULE_UPDATE=$(toml_get "$main_config_t" enable-module-update) || ENABLE_MODULE_UPDATE=true
@@ -101,6 +107,11 @@ for table_name in $(toml_get_table_names); do
 			abort "ERROR: build-mode '${app_args[build_mode]}' is not a valid option for '${table_name}': only 'both', 'apk' or 'module' is allowed"
 		fi
 	} || app_args[build_mode]=apk
+	app_args[include_stock]=$(toml_get "$t" include-stock) && {
+		if ! isoneof "${app_args[include_stock]}" disable merged split; then
+			abort "ERROR: include-stock '${app_args[include_stock]}' is not a valid option for '${table_name}': only 'disable', 'merged' or 'split' is allowed"
+		fi
+	} || app_args[include_stock]=merged
 
 	for dl_from in "${DL_SRCS[@]}"; do
 		if app_args[${dl_from}_dlurl]=$(toml_get "$t" "${dl_from}-dlurl"); then
@@ -118,8 +129,8 @@ for table_name in $(toml_get_table_names); do
 		abort "wrong arch '${app_args[arch]}' for '$table_name'"
 	fi
 
-	app_args[include_stock]=$(toml_get "$t" include-stock) || app_args[include_stock]=true && vtf "${app_args[include_stock]}" "include-stock"
-	app_args[dpi]=$(toml_get "$t" dpi) || app_args[dpi]="$DEF_DPI_LIST"
+	app_args[pkg_name]=$(toml_get "$t" pkg-name) || app_args[pkg_name]=""
+	app_args[dpi]=$(toml_get "$t" dpi) || app_args[dpi]=""
 	table_name_f=${table_name,,}
 	table_name_f=${table_name_f// /-}
 	app_args[module_prop_name]=$(toml_get "$t" module-prop-name) || app_args[module_prop_name]="${table_name_f}-jhc"
@@ -154,6 +165,7 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
+# [--- custom by @ev3rlin ---]
 # Initial changelog logic
 # log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
 # log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach root ReVanced YouTube and YT Music from Play Store"
@@ -162,13 +174,38 @@ if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
 log "\n$(cat "$TEMP_DIR"/*/changelog.md)"
 
+# Save full state for next build's comparison
+cp build.md build-state.md
+
+# Filter changelog to show only changes compared to previous build
+if [ -f "$TEMP_DIR/old_build_state.md" ]; then
+	_full_build=$(cat build.md)
+	_old_state=$(sed 's/[[:space:]]*$//' "$TEMP_DIR/old_build_state.md")
+	: >build.md
+
+	_has_changes=false
+	while IFS= read -r line; do
+		_cl=$(sed 's/[[:space:]]*$//' <<<"$line")
+		[ -z "$_cl" ] && continue
+		if ! grep -qxF "$_cl" <<<"$_old_state"; then
+			if [ "$_has_changes" = false ]; then
+				log "### Changelog"
+				_has_changes=true
+			fi
+			log "$_cl"
+		fi
+	done <<<"$_full_build"
+fi
+# [--- ---]
+
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
 	log "\nSkipped:"
 	log "$SKIPPED"
 fi
 
-# New skipped changelog logic with links
+# [--- custom by @ev3rlin ---]
+# New skipped changelog logic with links (@ev3rlin changes)
 
 # SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 # if [ -n "$SKIPPED" ]; then
@@ -183,5 +220,6 @@ fi
 # else
 # 	log "$(cat "$TEMP_DIR"/*-rv/changelog.md)"
 # fi
+# [--- ---]
 
 pr "Done"
