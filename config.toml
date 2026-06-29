@@ -17,7 +17,7 @@ rv-brand = "ReVanced Extended"
 [YouTube-RVX]
 app-name = "YouTube"
 build-mode = "both"
-version = "20.05.46"
+version = "20.51.39"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube"
 uptodown-dlurl = "https://youtube.en.uptodown.com/android"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.youtube"
