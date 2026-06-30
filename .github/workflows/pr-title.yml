@@ -1,0 +1,19 @@
+name: Auto PR Title
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  set-title:
+    if: "!startsWith(github.head_ref, 'chore-upstream-sync')"
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Set PR title
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --title "Merge ${{ github.head_ref }} into ${{ github.base_ref }}" \
+            --repo ${{ github.repository }}
