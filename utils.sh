@@ -235,6 +235,7 @@ auto_update_app_versions() {
                 sed -i '' "/\[YouTube-RVX\]/,/^$/{s/version = .*/version = \"$yt_latest\"/}" "$config_file"
             fi
             updated=true
+            echo "YouTube-RVX"
         fi
     fi
 
@@ -250,6 +251,7 @@ auto_update_app_versions() {
                 sed -i '' "/\[YouTube-Music-RVX\]/,/^$/{s/version = .*/version = \"$music_latest\"/}" "$config_file"
             fi
             updated=true
+            echo "YouTube-Music-RVX"
         fi
     fi
 
