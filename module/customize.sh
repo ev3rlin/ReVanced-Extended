@@ -181,11 +181,6 @@ fi
 rm -rf "${MODPATH:?}/bin" "$MODPATH/stock/"
 cp -f "$MODPATH/module.prop" "$MODPATH/module.prop.orig"
 
-<<<<<<< HEAD
 ui_print "* Done"
 ui_print "  by ev3rlin (github.com/ev3rlin)"
-=======
-ui_print "* Done. No need to reboot."
-ui_print "  by j-hc (github.com/j-hc)"
->>>>>>> a17518ec62f317de5ebc04798a6748dc1098a5bb
 ui_print " "
