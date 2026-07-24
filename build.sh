@@ -166,7 +166,6 @@ wait
 _clean_tmp
 if [ -z "$(ls -A1 "${BUILD_DIR}")" ]; then abort "All builds failed."; fi
 
-<<<<<<< HEAD
 # [--- custom by @ev3rlin ---]
 # Initial changelog logic
 # log "\nInstall [MicroG-RE](https://github.com/MorpheApp/MicroG-RE/releases) for non-root YouTube and YT Music APKs"
@@ -199,12 +198,6 @@ if [ -f "$TEMP_DIR/old_build_state.md" ]; then
 	done <<<"$_full_build"
 fi
 # [--- ---]
-=======
-log "\nInstall [Microg](https://github.com/MorpheApp/MicroG-RE/) for non-root YouTube and YT Music APKs"
-log "Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store"
-log "\n[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)\n"
-log "$(cat "$TEMP_DIR"/*/changelog.md)"
->>>>>>> a17518ec62f317de5ebc04798a6748dc1098a5bb
 
 SKIPPED=$(cat "$TEMP_DIR"/skipped 2>/dev/null || :)
 if [ -n "$SKIPPED" ]; then
