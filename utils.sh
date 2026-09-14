@@ -146,7 +146,6 @@ get_prebuilts() {
 		fi
 
 		if [ "$tag" = "Patches" ]; then
-<<<<<<< HEAD
 			# Initial changelog structure
 			if [ "$grab_cl" = true ]; then echo -e "[Patches Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
 
@@ -159,10 +158,6 @@ get_prebuilts() {
 			# [--- ---]
 
 			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = true ]; then
-=======
-			if [ "$grab_cl" = "true" ]; then echo -e "[Changelog](https://github.com/${src}/releases/tag/${tag_name})\n" >>"${cl_dir}/changelog.md"; fi
-			if [ "$REMOVE_RV_INTEGRATIONS_CHECKS" = "true" ]; then
->>>>>>> c518bab7e00d761836eb0a5a5888c4ded60b5adb
 				local extensions_ext
 				extensions_ext=$(unzip -l "${file}" "extensions/shared.*" | grep -o "shared\..*") extensions_ext="${extensions_ext#*.}"
 				if ! (
