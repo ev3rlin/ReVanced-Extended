@@ -14,6 +14,8 @@ cli-version = "latest"
 
 rv-brand = "ReVanced Extended"
 
+enable-update-checks = true
+
 [YouTube-RVX]
 app-name = "YouTube"
 build-mode = "both"
