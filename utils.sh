@@ -5,7 +5,7 @@ CWD=$(pwd)
 TEMP_DIR="temp"
 BIN_DIR="bin"
 BUILD_DIR="build"
-DL_SRCS=("direct" "archive" "apkmirror" "uptodown")
+DL_SRCS=("direct" "archive" "apkmirror")
 
 if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
 NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
@@ -657,7 +657,7 @@ get_archive_resp() {
 	r=$(req "$1" -)
 	if [ -z "$r" ]; then return 1; else __ARCHIVE_RESP__=$(sed -n 's;^<a href="\(.*\)"[^"]*;\1;p' <<<"$r"); fi
 }
-get_archive_vers() { sed 's/^[^-]*-//;s/-\(all\|arm64-v8a\|arm-v7a\)\.apk//g' <<<"$__ARCHIVE_RESP__"; }
+get_archive_vers() { sed 's/^[^-]*-//;s/-\(all\|arm64-v8a\|arm-v7a\)\.\(apk\|apkm\)//g' <<<"$__ARCHIVE_RESP__"; }
 get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 
 # -------------------- direct --------------------
@@ -833,6 +833,13 @@ build_rv() {
 		fi
 	fi
 	log "${table}: ${version}"
+	if [ "${args[patcher_args]}" ]; then p_patcher_args+=("${args[patcher_args]}"); fi
+
+	local branding_patch
+	branding_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "custom branding" || :) branding_patch=${branding_patch#*: }
+	if [[ ${p_patcher_args[*]} =~ $branding_patch ]]; then
+		branding_patch=""
+	fi
 
 	local microg_patch
 	microg_patch=$(grep "^Name: " <<<"$list_patches" | grep -i "gmscore\|microg" || :) microg_patch=${microg_patch#*: }
@@ -844,7 +851,6 @@ build_rv() {
 	local patcher_args patched_apk build_mode
 	local rv_brand_f=${args[rv_brand],,}
 	rv_brand_f=${rv_brand_f// /-}
-	if [ "${args[patcher_args]}" ]; then p_patcher_args+=("${args[patcher_args]}"); fi
 	for build_mode in "${build_mode_arr[@]}"; do
 		patcher_args=("${p_patcher_args[@]}")
 		pr "Building '${table}' in '$build_mode' mode"
@@ -853,12 +859,20 @@ build_rv() {
 		else
 			patched_apk="${TEMP_DIR}/${app_name_l}-${rv_brand_f}-${version_f}-${arch_f}.apk"
 		fi
-		if [ -n "$microg_patch" ]; then
-			if [ "$build_mode" = "apk" ]; then
+
+		if [ "$build_mode" = "apk" ]; then
+			if [ -n "$microg_patch" ]; then
 				patcher_args+=("-e \"${microg_patch}\"")
-			elif [ "$build_mode" = "module" ]; then
+			fi
+		elif [ "$build_mode" = "module" ]; then
+			if [ -n "$microg_patch" ]; then
 				patcher_args+=("-d \"${microg_patch}\"")
 			fi
+			if [ -n "$branding_patch" ]; then
+				patcher_args+=("-d \"${branding_patch}\"")
+			fi
+		else
+			abort unreachable
 		fi
 
 		if [ "${args[enable_update_checks]}" = "true" ] && [ "$build_mode" = "apk" ]; then
