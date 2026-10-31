@@ -26,14 +26,47 @@ excluded-patches = "'Custom header for YouTube'"
 included-patches = "'Visual preferences icons for YouTube' 'Return YouTube Username'"
 patcher-args = "-e 'Custom branding name for YouTube' -OappName='YouTube RVX' -e 'Custom branding icon for YouTube' -OappIcon='vanced_black' -e 'Theme' -OlightThemeBackgroundColor=#FFF9F9F9"
 
+<<<<<<< HEAD
 # https://github.com/j-hc/revanced-magisk-module/issues/554
 [YouTube-Music-RVX]
 app-name = "YouTube Music"
+=======
+[Music-Morphe]
+app-name = "Music"
+>>>>>>> 3379efdce7a5ca19334f0abd9e224a5ab21c8d7f
 build-mode = "both"
 arch = "both"
 version = "9.15.51"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube-music"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.apps.youtube.music"
+<<<<<<< HEAD
 excluded-patches = "'Custom header for YouTube Music'"
 included-patches = "'Visual preferences icons for YouTube Music' 'Return YouTube Username' 'Disable music video in album'"
 patcher-args = "-e 'Custom branding name for YouTube Music' -OappName='YT Music RVX' -e 'Custom branding icon for YouTube Music' -OappIcon='vanced_black'"
+=======
+enable-update-checks = true
+
+[Reddit-Morphe]
+app-name = "Reddit"
+build-mode = "apk"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/redditinc/reddit/"
+archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.reddit.frontpage"
+dpi = "120-640dpi"
+enable-update-checks = true
+
+[GooglePhotos]
+build-mode = "both"
+patches-source = "RookieEnough/De-Vanced"
+rv-brand = "DeVanced"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/photos/"
+archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.apps.photos"
+enable-update-checks = true
+
+[Twitter]
+patches-source = "crimera/piko-newx"
+rv-brand = "Piko"
+archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.twitter.android"
+version = "latest"
+included-patches = "'NewX: Restore Twitter branding'"
+enable-update-checks = true
+>>>>>>> 3379efdce7a5ca19334f0abd9e224a5ab21c8d7f
