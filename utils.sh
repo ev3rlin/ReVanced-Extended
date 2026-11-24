@@ -7,7 +7,8 @@ BIN_DIR="bin"
 BUILD_DIR="build"
 DL_SRCS=("direct" "archive" "apkmirror")
 
-if [ "${GITHUB_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GITHUB_TOKEN}"; else GH_HEADER=; fi
+if [ "${GH_TOKEN-}" ]; then GH_HEADER="Authorization: token ${GH_TOKEN}"; else GH_HEADER=; fi
+if [ "${GH_REPO-}" ]; then GITHUB_REPOSITORY="${GH_REPO}"; fi
 NEXT_VER_CODE=${NEXT_VER_CODE:-$(date +'%Y%m%d')}
 OS=$(uname -o)
 
@@ -874,7 +875,8 @@ build_rv() {
 			abort unreachable
 		fi
 
-		if [ "${args[enable_update_checks]}" = "true" ] && [ "$build_mode" = "apk" ] && [ -n "${GITHUB_REPOSITORY-}" ]; then
+		if [ "${args[enable_update_checks]}" = "true" ] && [ "$build_mode" = "apk" ] &&
+			[ -n "${GITHUB_REPOSITORY-}" ] && [ -n "${NEXT_VER_CODE-}" ]; then
 			local p="$TEMP_DIR/jhc-update-check.mpp"
 			if [ ! -f $p ]; then
 				local resp dlurl
@@ -883,43 +885,36 @@ build_rv() {
 				gh_dl $p "$dlurl" >/dev/null || return 1
 			fi
 			patcher_args+=("-p '$p'")
-
-			local v
-			v=$(git tag --sort=committerdate | tail -1) || :
-			if [[ $v =~ ^[0-9]+$ ]]; then
-				v=$((v + 1))
-				patcher_args+=("-e 'j-hc Update Check Res' -OcurrentTag='\"$v\"' -OupdateRepo='\"${GITHUB_REPOSITORY}\"'")
-			else
-				epr "'$v' is not a proper version tag"
-			fi
+			patcher_args+=("-e 'j-hc Update Check'")
+			patcher_args+=("-e 'j-hc Update Check Res' -OcurrentTag='\"${NEXT_VER_CODE}\"' -OupdateRepo='\"${GITHUB_REPOSITORY}\"'")
 		fi
 
-		local stock_apk_to_patch="${stock_apk}.stripped.apk"
-		cp -f "$stock_apk" "$stock_apk_to_patch"
-		if [ "$build_mode" = module ]; then
-			zip -d "$stock_apk_to_patch" "lib/*" >/dev/null 2>&1 || :
-		else
-			if [ "$arch" = "arm64-v8a" ]; then
-				zip -d "$stock_apk_to_patch" "lib/armeabi-v7a/*" "lib/x86_64/*" "lib/x86/*" >/dev/null 2>&1 || :
-			elif [ "$arch" = "arm-v7a" ]; then
-				zip -d "$stock_apk_to_patch" "lib/arm64-v8a/*" "lib/x86_64/*" "lib/x86/*" >/dev/null 2>&1 || :
-			elif [ "$arch" = "x86" ]; then
-				zip -d "$stock_apk_to_patch" "lib/arm64-v8a/*" "lib/x86_64/*" "lib/armeabi-v7a/*" >/dev/null 2>&1 || :
-			elif [ "$arch" = "x86_64" ]; then
-				zip -d "$stock_apk_to_patch" "lib/arm64-v8a/*" "lib/armeabi-v7a/*" "lib/x86/*" >/dev/null 2>&1 || :
+		if grep -Fq -- '--striplibs' <<<"$(java 2>&1 -jar "$cli_jar" patch)"; then
+			# bug in --striplibs ?
+			if [ "$build_mode" = "module" ]; then
+				patcher_args+=("--striplibs mips")
 			else
-				zip -d "$stock_apk_to_patch" "lib/x86_64/*" "lib/x86/*" >/dev/null 2>&1 || :
+				if [ "$arch" = "arm64-v8a" ]; then
+					patcher_args+=("--striplibs arm64-v8a")
+				elif [ "$arch" = "arm-v7a" ]; then
+					patcher_args+=("--striplibs armeabi-v7a")
+				elif [ "$arch" = "x86" ]; then
+					patcher_args+=("--striplibs x86")
+				elif [ "$arch" = "x86_64" ]; then
+					patcher_args+=("--striplibs x86_64")
+				else
+					patcher_args+=("--striplibs arm64-v8a,armeabi-v7a")
+				fi
 			fi
 		fi
 
 		local apk_output="${BUILD_DIR}/${app_name_l}-${rv_brand_f}-v${version_f}-${arch_f}.apk"
 		if [ "${NORB:-}" != true ] || { [ ! -f "$patched_apk" ] && [ ! -f "$apk_output" ]; }; then
-			if ! patch_apk "$stock_apk_to_patch" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}"; then
+			if ! patch_apk "$stock_apk" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}"; then
 				epr "Building '${table}' failed!"
 				return 0
 			fi
 		fi
-		rm "$stock_apk_to_patch"
 		if [ "$build_mode" = apk ]; then
 			if [ "${NORB:-}" != true ] || { [ ! -f "$patched_apk" ] && [ ! -f "$apk_output" ]; }; then
 				mv -f "$patched_apk" "$apk_output"
